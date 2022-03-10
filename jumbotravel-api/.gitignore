@@ -1,0 +1,3 @@
+docs/**/*.json
+docs/**/*.yaml
+docs/**/*docs.go
