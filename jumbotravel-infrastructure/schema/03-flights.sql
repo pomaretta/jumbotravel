@@ -26,15 +26,8 @@ CREATE TABLE IF NOT EXISTS flights (
     route_id                INT NOT NULL,
     status                  VARCHAR(255) NOT NULL,
 
-    departure_country       VARCHAR(255) NOT NULL,    
-    arrival_country         VARCHAR(255) NOT NULL,
-    departure_city          VARCHAR(255) NOT NULL,
-    arrival_city            VARCHAR(255) NOT NULL,
-    departure_airport       VARCHAR(255) NOT NULL,
-    arrival_airport         VARCHAR(255) NOT NULL,
-
-    departure_date          TIMESTAMP NOT NULL,
-    arrival_date            TIMESTAMP NOT NULL,
+    departure_time          TIMESTAMP NOT NULL,
+    arrival_time            TIMESTAMP NOT NULL,
 
     created_at              TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at              TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
