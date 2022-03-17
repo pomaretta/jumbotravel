@@ -1,0 +1,13 @@
+version: "3.7"
+
+services:
+  database:
+    image: mysql:8
+    container_name: jumbotravel-database
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_DATABASE: "jumbotravel"
+    volumes:
+      - /root/data/jumbotravel/db:/var/lib/mysql
+    network_mode: host
