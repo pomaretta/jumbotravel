@@ -1,5 +1,5 @@
 run:
-	docker-compose -f test.yaml up -d
+	docker-compose -f dev.yaml up -d
 
 stop:
-	docker-compose -f test.yaml down
+	docker-compose -f dev.yaml down

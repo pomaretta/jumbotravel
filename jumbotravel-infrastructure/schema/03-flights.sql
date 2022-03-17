@@ -5,7 +5,7 @@ USE jumbotravel;
 CREATE TABLE IF NOT EXISTS flight_routes (
 
     route_id                INT NOT NULL AUTO_INCREMENT,
-    airplane_id             INT NOT NULL,
+    airplanemapping_id      INT NOT NULL,
 
     departure_country       VARCHAR(255) NOT NULL,    
     arrival_country         VARCHAR(255) NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS flight_routes (
     updated_at              TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     PRIMARY KEY (route_id),
-    FOREIGN KEY (airplane_id) REFERENCES master_airplanes(airplane_id)
+    FOREIGN KEY (airplanemapping_id) REFERENCES master_airplanesmapping(airplanemapping_id)
 );
 CREATE TABLE IF NOT EXISTS flights (
 
@@ -46,8 +46,10 @@ CREATE TABLE IF NOT EXISTS flight_agents (
 
     flight_id               INT NOT NULL,
     agent_id                INT NOT NULL,
+    agentmapping_id         INT NOT NULL,
 
     PRIMARY KEY (flight_id, agent_id),
     FOREIGN KEY (flight_id) REFERENCES flights(flight_id),
-    FOREIGN KEY (agent_id) REFERENCES master_agents(agent_id)
+    FOREIGN KEY (agent_id) REFERENCES master_agents(agent_id),
+    FOREIGN KEY (agentmapping_id) REFERENCES master_agentmapping(agentmapping_id)
 );
