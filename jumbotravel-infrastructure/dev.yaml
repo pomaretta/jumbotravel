@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+    database:
+        image: mysql:8
+        platform: linux/amd64
+        container_name: jumbotravel-infrastructure-test
+        restart: unless-stopped
+        volumes:
+            - ${PWD}/schema:/docker-entrypoint-initdb.d/
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: jumbotravel
+        ports:
+            - "3306:3306"

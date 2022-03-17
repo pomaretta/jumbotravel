@@ -18,21 +18,21 @@ version: "3.7"
 
 services:
     database:
-        image: postgres:14
+        image: arm64v8/mysql:8.0-oracle
         container_name: jumbotravel-infrastructure-maindb
         restart: unless-stopped
         volumes:
-            - jumbotravel-infrastructure-maindb:/var/lib/postgresql/data
+            - jumbotravel-infrastructure-maindb:/var/lib/mysql
         environment:
-            - POSTGRES_DB=jumbotravel
-            - POSTGRES_USER=jumbotravel
-            - POSTGRES_PASSWORD=jumbotravel
-            - PGDATA=/var/lib/postgresql/data/pgdata
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: jumbotravel
+            MYSQL_USER: jumbotravel
+            MYSQL_PASSWORD: jumbotravel
         network_mode: host
         expose:
-            - 5432
+            - 3306
 
 volumes:
-    jumbtravel-infrastructure-maindb:
+    jumbotravel-infrastructure-maindb:
         external: true
 ```
