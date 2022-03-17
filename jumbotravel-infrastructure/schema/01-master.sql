@@ -16,8 +16,7 @@ CREATE TABLE IF NOT EXISTS master_airplanes (
     created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     -- CONSTRAINT
-    PRIMARY KEY (airplane_id),
-    UNIQUE KEY (carrier, flight_number)
+    PRIMARY KEY (airplane_id)
 );
 CREATE TABLE IF NOT EXISTS master_agents (
 
@@ -46,8 +45,7 @@ CREATE TABLE IF NOT EXISTS master_agents (
     active              BOOLEAN DEFAULT TRUE,
 
     -- CONSTRAINT
-    PRIMARY KEY (agent_id),
-    UNIQUE KEY (dni, email)
+    PRIMARY KEY (agent_id)
 );
 CREATE TABLE IF NOT EXISTS master_products (
 
@@ -72,6 +70,5 @@ CREATE TABLE IF NOT EXISTS master_products (
     created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     -- CONSTRAINT
-    PRIMARY KEY (product_id),
-    UNIQUE KEY (product_code)
+    PRIMARY KEY (product_id)
 );
