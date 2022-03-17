@@ -1,8 +1,9 @@
 package api
 
 import (
-	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/swaggo/gin-swagger/swaggerFiles"
+	"github.com/pomaretta/jumbotravel/jumbotravel-api/api/middleware"
+	"github.com/pomaretta/jumbotravel/jumbotravel-api/docs"
+	_ "github.com/pomaretta/jumbotravel/jumbotravel-api/docs"
 )
 
 func (api *API) initPublic() {
@@ -11,7 +12,7 @@ func (api *API) initPublic() {
 
 	docsGroup := r.Group("/swagger")
 	{
-		docsGroup.GET("*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+		docsGroup.GET("*any", middleware.SwaggerMiddleware(api.application, docs.SwaggerInfo))
 	}
 
 }

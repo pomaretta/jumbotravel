@@ -1,3 +1,8 @@
 docs/**/*.json
 docs/**/*.yaml
 docs/**/*docs.go
+
+jumbotravel-api
+
+# Dev config
+*dev.conf

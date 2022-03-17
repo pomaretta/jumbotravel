@@ -6,8 +6,8 @@ import (
 )
 
 type DB interface {
-	getSlice(domain.Data, string, ...interface{}) ([]interface{}, error)
+	getSlice(domain.Entity, string, ...interface{}) ([]interface{}, error)
 	getIntValue(string, ...interface{}) (int, error)
-	Fetch(domain.Data, builders.Builder) ([]interface{}, error)
+	Fetch(domain.Entity, builders.Builder) ([]interface{}, error)
 	FetchCount(builders.Builder) (int, error)
 }

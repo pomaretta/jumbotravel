@@ -1,6 +1,7 @@
 package domain
 
-type Data interface {
+type Entity interface {
 	GetDestFields() []interface{}
 	New()
+	Val() interface{}
 }

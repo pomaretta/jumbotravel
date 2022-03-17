@@ -1,3 +1,5 @@
 package application
 
-type Application struct{}
+type Application struct {
+	MySQLFetcher
+}

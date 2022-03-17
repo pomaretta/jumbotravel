@@ -20,12 +20,19 @@ func New(application *application.Application) *API {
 		application: application,
 	}
 
+	gin.SetMode(gin.DebugMode)
+
 	api.initRoutes()
 
 	return api
 }
 
-func (api *API) initRoutes() {}
+func (api *API) initRoutes() {
+
+	api.initPublic()
+	api.initMaster()
+
+}
 
 func (api *API) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	api.handler.ServeHTTP(w, req)
