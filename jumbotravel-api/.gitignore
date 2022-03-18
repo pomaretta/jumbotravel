@@ -6,3 +6,6 @@ jumbotravel-api
 
 # Dev config
 *dev.conf
+
+rsa.private
+rsa.public

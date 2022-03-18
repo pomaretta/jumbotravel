@@ -1,8 +1,6 @@
 package mysql
 
 import (
-	"fmt"
-
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/entity"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/infrastructure/builders/masterbuilders"
 )
@@ -14,9 +12,6 @@ func (db *MySQL) FetchMasterAirports(airpotId int, country, city, airport string
 	qb.SetCountry(country)
 	qb.SetCity(city)
 	qb.SetAirport(airport)
-
-	q, _, _ := qb.BuildQuery()
-	fmt.Println(q)
 
 	ent, err := db.Fetch(&entity.MasterAirport{}, qb)
 	if err != nil {

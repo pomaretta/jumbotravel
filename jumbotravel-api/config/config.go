@@ -1,7 +1,7 @@
 package config
 
 type Config struct {
-	Database DBConfig
+	Database []DBConfig
 }
 
 type DBConfig struct {
@@ -10,4 +10,5 @@ type DBConfig struct {
 	DatabaseName string
 	User         string
 	Password     string
+	Enviroment   string
 }

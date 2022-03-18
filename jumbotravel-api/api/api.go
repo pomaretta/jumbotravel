@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/pomaretta/jumbotravel/jumbotravel-api/api/middleware"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/application"
 )
 
@@ -20,8 +22,13 @@ func New(application *application.Application) *API {
 		application: application,
 	}
 
-	gin.SetMode(gin.DebugMode)
+	mode := gin.DebugMode
+	if application.Environment == "PROD" {
+		mode = gin.ReleaseMode
+	}
+	gin.SetMode(mode)
 
+	api.initMiddlewares()
 	api.initRoutes()
 
 	return api
@@ -31,6 +38,15 @@ func (api *API) initRoutes() {
 
 	api.initPublic()
 	api.initMaster()
+
+}
+
+func (api *API) initMiddlewares() {
+
+	// Authorizer Middleware
+	api.handler.Use(middleware.AuthenticationMiddleware(api.application))
+	// Case Insentivive
+	api.handler.Use(middleware.InsensitiveMiddleware)
 
 }
 

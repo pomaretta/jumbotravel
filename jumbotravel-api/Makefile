@@ -1,3 +1,10 @@
+check_defined = \
+	$(strip $(foreach 1,$1, \
+		$(call __check_defined,$1,$(strip $(value 2)))))
+__check_defined = \
+	$(if $(value $1),, \
+	$(error Undefined $1$(if $2, ($2))))
+
 all: cdk-install swagger build run
 
 swagger:
@@ -9,10 +16,12 @@ swagger:
 		-g ./main.go
 
 build:
-	go build
+	$(call check_defined, ENV, ENV of API)
+	go build -ldflags "-X main.environment=$(ENV)"
 
 run:
-	./jumbotravel-api -c dev.conf
+	$(call check_defined, CONF, ENV of API)
+	./jumbotravel-api -c $(CONF)
 
 cdk-install:
 	@echo "[Install Deps] running phase"
