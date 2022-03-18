@@ -45,3 +45,22 @@ func (db *MySQL) FetchMasterAgents(agentId int, dni, agentType, email string, ac
 
 	return
 }
+
+func (db *MySQL) FetchMasterAirplanes(airplaneId, flightNumber int, carrier string) (s []entity.Airplane, err error) {
+
+	qb := &masterbuilders.AirplaneQueryBuilder{}
+	qb.SetAirplaneID(airplaneId)
+	qb.SetCarrier(carrier)
+	qb.SetFlightNumber(flightNumber)
+
+	ent, err := db.Fetch(&entity.Airplane{}, qb)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, e := range ent {
+		s = append(s, e.(entity.Airplane))
+	}
+
+	return
+}
