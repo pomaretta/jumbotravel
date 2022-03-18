@@ -24,3 +24,24 @@ func (db *MySQL) FetchMasterAirports(airpotId int, country, city, airport string
 
 	return
 }
+
+func (db *MySQL) FetchMasterAgents(agentId int, dni, agentType, email string, active bool) (s []entity.Agent, err error) {
+
+	qb := &masterbuilders.MasterAgentQueryBuilder{}
+	qb.SetAgentID(agentId)
+	qb.SetDNI(dni)
+	qb.SetType(agentType)
+	qb.SetActive(active)
+	qb.SetEmail(email)
+
+	ent, err := db.Fetch(&entity.Agent{}, qb)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, e := range ent {
+		s = append(s, e.(entity.Agent))
+	}
+
+	return
+}

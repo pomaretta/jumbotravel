@@ -27,7 +27,7 @@ import (
 func Airports(application *application.Application) func(*gin.Context) {
 	return func(c *gin.Context) {
 
-		airpotId := c.DefaultQuery("airpotId", "-1")
+		airpotId := c.DefaultQuery("airpotid", "-1")
 		parsedAirportId, err := strconv.Atoi(airpotId)
 		if err != nil {
 			c.JSON(400, gin.H{
