@@ -19,6 +19,15 @@ func AuthenticationMiddleware(application *application.Application) gin.HandlerF
 			return
 		}
 
+		method := c.Request.Method
+		endpoint := c.Request.URL.Path
+
+		// Check if the endpoint is public or not
+		if IsPublic(endpoint) {
+			c.Next()
+			return
+		}
+
 		authorizationToken := c.Request.Header.Get("Authorization")
 
 		// TODO: Check if the token is valid
@@ -45,27 +54,12 @@ func AuthenticationMiddleware(application *application.Application) gin.HandlerF
 			return
 		}
 
-		method := c.Request.Method
-		endpoint := c.Request.URL.Path
-
 		for _, resource := range claims.Resources {
 
 			resourceMethod := strings.SplitN(resource, "/", 2)[0]
 			resourceEndpoint := strings.SplitN(resource, "/", 2)[1]
 
-			resourceMethod = strings.ReplaceAll(resourceMethod, "/", "\\/")
-			resourceEndpoint = strings.ReplaceAll("/"+resourceEndpoint, "/", "\\/")
-			resourceMethod = strings.ReplaceAll(resourceMethod, "*", ".*")
-			resourceEndpoint = strings.ReplaceAll(resourceEndpoint, "*", ".*")
-
-			// Check if the method is allowed
-			methodExpression := regexp.MustCompile(resourceMethod)
-			if !methodExpression.MatchString(method) {
-				continue
-			}
-
-			resourceExpression := regexp.MustCompile(resourceEndpoint)
-			if !resourceExpression.MatchString(endpoint) {
+			if !IsAllowed(method, endpoint, resourceMethod, resourceEndpoint) {
 				continue
 			}
 
@@ -78,4 +72,33 @@ func AuthenticationMiddleware(application *application.Application) gin.HandlerF
 		return
 
 	}
+}
+
+func IsPublic(endpoint string) bool {
+	publicExpression := regexp.MustCompile("\\/public\\/.*")
+	if !publicExpression.MatchString(endpoint) {
+		return false
+	}
+	return true
+}
+
+func IsAllowed(method, endpoint, resourceMethod, resourceEndpoint string) bool {
+
+	resourceMethod = strings.ReplaceAll(resourceMethod, "/", "\\/")
+	resourceEndpoint = strings.ReplaceAll("/"+resourceEndpoint, "/", "\\/")
+	resourceMethod = strings.ReplaceAll(resourceMethod, "*", ".*")
+	resourceEndpoint = strings.ReplaceAll(resourceEndpoint, "*", ".*")
+
+	// Check if the method is allowed
+	methodExpression := regexp.MustCompile(resourceMethod)
+	if !methodExpression.MatchString(method) {
+		return false
+	}
+
+	resourceExpression := regexp.MustCompile(resourceEndpoint)
+	if !resourceExpression.MatchString(endpoint) {
+		return false
+	}
+
+	return true
 }
