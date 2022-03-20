@@ -55,6 +55,9 @@ func (api *API) initMiddlewares() {
 	// Case Insentivive
 	api.handler.Use(middleware.InsensitiveMiddleware)
 
+	// Logging
+	api.handler.Use(middleware.AccessLoggingMiddleware(api.application))
+
 }
 
 func (api *API) ServeHTTP(w http.ResponseWriter, req *http.Request) {

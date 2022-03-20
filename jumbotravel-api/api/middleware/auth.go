@@ -76,8 +76,6 @@ func AuthenticationMiddleware(application *application.Application) gin.HandlerF
 
 		response.Unauthorized(c)
 		c.Abort()
-		return
-
 	}
 }
 
@@ -104,9 +102,5 @@ func IsAllowed(method, endpoint, resourceMethod, resourceEndpoint string) bool {
 	}
 
 	resourceExpression := regexp.MustCompile(resourceEndpoint)
-	if !resourceExpression.MatchString(endpoint) {
-		return false
-	}
-
-	return true
+	return resourceExpression.MatchString(endpoint)
 }

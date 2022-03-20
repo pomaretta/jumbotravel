@@ -34,4 +34,7 @@ type MySQLFetcher interface {
 	FetchAgentAuth(dni string) (dto.AgentAuth, error)
 	FetchAuthToken(agentId int) (string, error)
 	PutToken(tokenId, subject, token string, agentId int, issuedAt, expiresAt time.Time) error
+
+	// Access Logging
+	PutAccessLogging(requestId, tokenId, tokenName, ip, method, path, query, errorMessage string, status int) error
 }
