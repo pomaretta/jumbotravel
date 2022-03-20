@@ -97,3 +97,27 @@ func (db *MySQL) FetchCount(qb builders.Builder) (int, error) {
 
 	return db.getIntValue(query, args...)
 }
+
+func (db *MySQL) Put(qb builders.Builder) (int64, error) {
+	query, args, err := qb.BuildQuery()
+	if err != nil {
+		return -1, err
+	}
+	res, err := db.con.Exec(query, args...)
+	if err != nil {
+		return -1, err
+	}
+	return res.LastInsertId()
+}
+
+func (db *MySQL) Update(qb builders.Builder) (int64, error) {
+	query, args, err := qb.BuildQuery()
+	if err != nil {
+		return -1, err
+	}
+	res, err := db.con.Exec(query, args...)
+	if err != nil {
+		return -1, err
+	}
+	return res.RowsAffected()
+}

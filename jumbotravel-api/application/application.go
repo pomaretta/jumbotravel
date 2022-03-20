@@ -1,6 +1,8 @@
 package application
 
 import (
+	"time"
+
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/config"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/dto"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/entity"
@@ -27,4 +29,9 @@ type MySQLFetcher interface {
 
 	// Flights
 	FetchRoute(routeId, airplaneId, flightId int, departureCountry, arrivalCountry, departureCity, arrivalCity, departureAirport, arrivalAirport, status, carrier string) ([]dto.Route, error)
+
+	// Auth
+	FetchAgentAuth(dni string) (dto.AgentAuth, error)
+	FetchAuthToken(agentId int) (string, error)
+	PutToken(tokenId, subject, token string, agentId int, issuedAt, expiresAt time.Time) error
 }

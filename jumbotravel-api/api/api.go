@@ -40,6 +40,7 @@ func (api *API) initRoutes() {
 	api.initMaster()
 	api.initStock()
 	api.initFlight()
+	api.initAuth()
 
 }
 

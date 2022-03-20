@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	userTTL time.Duration = 14 * time.Hour             // 14 hours
+	userTTL time.Duration = 7 * 24 * time.Hour         // 7 Days
 	apiTTL  time.Duration = 100 * 365 * 24 * time.Hour // 100 years
 )
 
