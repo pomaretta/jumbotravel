@@ -9,5 +9,6 @@ func (api *API) initMaster() {
 	r.GET("/airports", master.Airports(api.application))
 	r.GET("/agents", master.Agents(api.application))
 	r.GET("/airplanes", master.Airplanes(api.application))
+	r.GET("/products", master.Products(api.application))
 
 }

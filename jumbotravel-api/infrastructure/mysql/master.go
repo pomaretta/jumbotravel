@@ -1,6 +1,8 @@
 package mysql
 
 import (
+	"fmt"
+
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/entity"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/infrastructure/builders/masterbuilders"
 )
@@ -60,6 +62,27 @@ func (db *MySQL) FetchMasterAirplanes(airplaneId, flightNumber int, carrier stri
 
 	for _, e := range ent {
 		s = append(s, e.(entity.Airplane))
+	}
+
+	return
+}
+
+func (db *MySQL) FetchMasterProducts(productId, productCode int) (s []entity.Product, err error) {
+
+	qb := &masterbuilders.MasterProductQueryBuilder{}
+	qb.SetProductID(productId)
+	qb.SetProductCode(productCode)
+
+	q, _, _ := qb.BuildQuery()
+	fmt.Println(q)
+
+	ent, err := db.Fetch(&entity.Product{}, qb)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, e := range ent {
+		s = append(s, e.(entity.Product))
 	}
 
 	return

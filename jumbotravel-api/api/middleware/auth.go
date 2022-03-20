@@ -11,6 +11,13 @@ import (
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/utils"
 )
 
+var (
+	publicResources = []string{
+		"\\/public\\/.*",
+		"\\/swagger.*",
+	}
+)
+
 func AuthenticationMiddleware(application *application.Application) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
@@ -75,11 +82,12 @@ func AuthenticationMiddleware(application *application.Application) gin.HandlerF
 }
 
 func IsPublic(endpoint string) bool {
-	publicExpression := regexp.MustCompile("\\/public\\/.*")
-	if !publicExpression.MatchString(endpoint) {
-		return false
+	for _, resource := range publicResources {
+		if matched, _ := regexp.MatchString(resource, endpoint); matched {
+			return true
+		}
 	}
-	return true
+	return false
 }
 
 func IsAllowed(method, endpoint, resourceMethod, resourceEndpoint string) bool {

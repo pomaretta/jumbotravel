@@ -8,11 +8,14 @@ import (
 
 func (api *API) initPublic() {
 
-	r := api.handler.Group("/public")
+	r := api.handler
+	publicGroup := r.Group("/public")
 
-	docsGroup := r.Group("/swagger")
+	docsGroup := publicGroup.Group("/swagger")
 	{
 		docsGroup.GET("*any", middleware.SwaggerMiddleware(api.application, docs.SwaggerInfo))
 	}
+
+	r.GET("/swagger", middleware.RedirectToEndpoint(api.application, "/public/swagger/index.html"))
 
 }
