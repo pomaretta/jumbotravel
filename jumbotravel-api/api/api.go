@@ -43,8 +43,12 @@ func (api *API) initRoutes() {
 
 func (api *API) initMiddlewares() {
 
+	// Cors
+	api.handler.Use(middleware.CorsMiddleware())
+
 	// Authorizer Middleware
 	api.handler.Use(middleware.AuthenticationMiddleware(api.application))
+
 	// Case Insentivive
 	api.handler.Use(middleware.InsensitiveMiddleware)
 
