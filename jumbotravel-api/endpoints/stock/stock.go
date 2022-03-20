@@ -65,7 +65,7 @@ func Stock(application *application.Application) func(*gin.Context) {
 
 		stock, err := application.GetStock(parsedStockId, parsedAirplaneId, parsedProductId, parsedProductCode)
 		if err != nil {
-			c.JSON(500, gin.H{
+			c.JSON(400, gin.H{
 				"error": err.Error(),
 			})
 			return

@@ -24,4 +24,7 @@ type MySQLFetcher interface {
 
 	// Stock
 	FetchStock(stockId, airplaneId, productId, productCode int) ([]dto.Stock, error)
+
+	// Flights
+	FetchRoute(routeId, airplaneId, flightId int, departureCountry, arrivalCountry, departureCity, arrivalCity, departureAirport, arrivalAirport, status, carrier string) ([]dto.Route, error)
 }

@@ -39,6 +39,7 @@ func (api *API) initRoutes() {
 	api.initPublic()
 	api.initMaster()
 	api.initStock()
+	api.initFlight()
 
 }
 

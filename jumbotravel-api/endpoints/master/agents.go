@@ -51,7 +51,7 @@ func Agents(application *application.Application) func(*gin.Context) {
 
 		masterAgents, err := application.GetMasterAgents(parsedAirportId, dni, agentType, email, parsedActive)
 		if err != nil {
-			c.JSON(500, gin.H{
+			c.JSON(400, gin.H{
 				"error": err.Error(),
 			})
 			return
