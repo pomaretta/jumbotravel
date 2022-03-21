@@ -1,6 +1,7 @@
 package application
 
 import (
+	"log"
 	"time"
 
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/config"
@@ -12,6 +13,7 @@ type Application struct {
 	Environment string
 	Version     string
 	Config      *config.DBConfig
+	Logger      *log.Logger
 
 	MySQLFetcher
 }

@@ -2,14 +2,19 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"strings"
+	"time"
 
 	"github.com/BurntSushi/toml"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/api"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/application"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/config"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/infrastructure/mysql"
+	"github.com/pomaretta/jumbotravel/jumbotravel-api/utils"
 )
 
 var (
@@ -26,6 +31,32 @@ func establishDatabaseConnection(config *config.DBConfig) *mysql.MySQL {
 		Password:     config.Password,
 	}
 	return mysqlDB
+}
+
+func initializeLogging() (*os.File, *log.Logger) {
+
+	if !utils.IsWorker() {
+		return nil, nil
+	}
+
+	// If logs directory doesn't exist, create it
+	if _, err := os.Stat("logs"); os.IsNotExist(err) {
+		os.Mkdir("logs", 0755)
+	}
+
+	workerName := strings.ToLower(os.Getenv("PWS_WORKER"))
+	if workerName != "" {
+		workerName = fmt.Sprintf("-%s", workerName)
+	}
+
+	// Create file with timestamp
+	logFile, _ := os.Create(fmt.Sprintf(
+		"logs/jumbotravel-api%s-%s-%s.json",
+		workerName,
+		strings.ToLower(environment),
+		time.Now().UTC().Format("20060102150405"),
+	))
+	return logFile, log.New(logFile, "", 0)
 }
 
 // @title JumboTravel API
@@ -64,10 +95,15 @@ func main() {
 	}
 	defer mysqlDB.Disconnect()
 
+	// Initialize the logger
+	logFile, logger := initializeLogging()
+	defer logFile.Close()
+
 	app := &application.Application{
 		Config:      &dbConfig,
 		Version:     version,
 		Environment: environment,
+		Logger:      logger,
 
 		MySQLFetcher: mysqlDB,
 	}

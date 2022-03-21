@@ -9,3 +9,6 @@ jumbotravel-api
 
 rsa.private
 rsa.public
+
+# Ignore logs
+logs

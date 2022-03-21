@@ -73,18 +73,26 @@ func AccessLoggingMiddleware(app *application.Application) func(*gin.Context) {
 			}
 		}
 
-		// Put the access logging
-		_ = app.PutAccessLogging(
-			requestId,
-			tokenId,
-			tokenName,
-			ip,
-			method,
-			path,
-			query,
-			errorMessage,
-			status,
-		)
+		// Create map with the data
+		data := map[string]interface{}{
+			"request_id":    requestId,
+			"status":        status,
+			"method":        method,
+			"path":          path,
+			"query":         query,
+			"token_id":      tokenId,
+			"token_name":    tokenName,
+			"ip":            ip,
+			"error_message": errorMessage,
+		}
+
+		// Marshal the data to json
+		jsonData, _ := json.Marshal(data)
+
+		// Write the access logging to the access log file
+		if app.Logger != nil {
+			app.Logger.Println(string(jsonData))
+		}
 
 	}
 }
