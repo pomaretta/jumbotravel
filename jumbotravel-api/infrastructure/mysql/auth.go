@@ -37,7 +37,7 @@ func (db *MySQL) FetchAgentAuth(dni string) (dto.AgentAuth, error) {
 	}
 
 	if len(ent) == 0 {
-		return dto.AgentAuth{}, errors.New("Agent not found")
+		return dto.AgentAuth{}, errors.New("identifier not found")
 	}
 
 	return ent[0].(dto.AgentAuth), nil

@@ -31,6 +31,9 @@ func (qb *AuthTokenQueryBuilder) buildWhereClause() (string, []interface{}, erro
 	// The token must be active
 	partialQuery = fmt.Sprintf("%s and au.active = true", partialQuery)
 
+	// The token must be valid
+	partialQuery = fmt.Sprintf("%s and au.expires_at > now()", partialQuery)
+
 	return partialQuery, args, nil
 }
 

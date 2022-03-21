@@ -52,7 +52,7 @@ func Login(application *application.Application) func(*gin.Context) {
 
 		agent, err := application.GetAgentAuth(agentDni)
 		if err != nil {
-			c.JSON(400, gin.H{
+			c.JSON(401, gin.H{
 				"error": err.Error(),
 			})
 			return
