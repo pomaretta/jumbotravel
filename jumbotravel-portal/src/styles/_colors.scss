@@ -1,0 +1,46 @@
+// COLORS
+$primary: rgb(0, 182, 215);
+$primary-2: rgb(29, 255, 70);
+$secondary: #03DAC6;
+$secondary-2: #018786;
+
+$background: #F3F5F7;
+$surface: #FFFFFF;
+$error: #B00020;
+
+$on-primary: #FFFFFF;
+$on-secondary: #000000;
+$on-background: #000000;
+$on-surface: #000000;
+$on-error: #FFFFFF;
+
+.text-brand-green {
+    color: $primary-2;
+}
+
+.text-brand-blue {
+    color: $primary;
+}
+
+.bg-jt {
+    background-color: $background;
+}
+
+.bg-jt-primary {
+    background-color: $primary;
+}
+
+.bg-jt-primary2 {
+    background-color: $primary-2;
+}
+
+.border-jt-primary {
+    --tw-border-opacity: 1;
+    border-color: rgba(0, 182, 215, var(--tw-border-opacity));
+}
+
+.border-jt-primary2 {
+    --tw-border-opacity: 1;
+    border-color: rgba(29, 255, 70, var(--tw-border-opacity));
+}
+

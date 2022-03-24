@@ -1,0 +1,20 @@
+@import "./globals.scss";
+
+a {
+    cursor: pointer;
+}
+
+.warning {
+    background-color: $background !important;
+    border: 1px solid $error !important;
+    color: $error !important;
+
+    &:hover {
+        color: $background !important;
+        background-color: $error !important;
+    }
+}
+
+.warning-bg {
+    background-color: $error !important;
+}

@@ -1,0 +1,15 @@
+// Tailwind CSS
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// Custom SCSS
+// @import "./reset.scss";
+@import "./colors.scss";
+@import "./fonts.scss";
+// @import "./mixins.scss";
+
+#root {
+    font-family: $font;
+    background-color: $background;
+}
