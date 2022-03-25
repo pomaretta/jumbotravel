@@ -11,7 +11,7 @@ import JWTToken from "./utils/token";
 // ==================
 import AppRouter from './router';
 import ROUTES from '../routes';
-import Login from "./modules/login";
+import LoginModule from "./modules/login/Module";
 
 class App extends Component {
 
@@ -33,7 +33,6 @@ class App extends Component {
             isLoggedIn: false,
             token: null
         }
-
     }
 
     getToken() {
@@ -61,13 +60,43 @@ class App extends Component {
         })
     }
 
-    render() {
-        const token = this.getToken();
-        
-        if (!token || !token.isValid()) {
-            return <Login app={this} config={this.config} /> 
+    login({ identifier, password }) {
+
+        // Login
+        let ok = this.api.authorize({
+            identifier: identifier,
+            password: password
+        })
+
+        if (!ok) {
+            return false;
         }
 
+        return true;
+    }
+
+    loginWithToken() {
+
+        const token = this.getToken();
+        if (!token) {
+            return false;
+        }
+
+        // Login
+        this.setState({
+            isLoggedIn: true,
+            token: token
+        })
+    }
+
+    componentDidMount() {
+        if (!this.state.isLoggedIn) {
+            this.loginWithToken();
+            return <LoginModule app={this} config={this.props.config} />
+        }
+    }
+
+    render() {
         return (
             <AppRouter app={this} />
         );
