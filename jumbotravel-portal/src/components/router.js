@@ -5,6 +5,12 @@ import {
     Route
 } from "react-router-dom"
 
+import AppModule from "./modules/app";
+import LoginModule from './modules/login/Module';
+import FlightsModule from './modules/flights/Module';
+import PlanesModule from './modules/planes/Module';
+import NotFound from './modules/404';
+
 class AppRouter extends React.Component {
 
     defineRoute({
@@ -31,10 +37,13 @@ class AppRouter extends React.Component {
         return (
             <Router>
                 <Routes>
-                    {this.defineRoutes({
-                        routes: this.props.app.routes,
-                        config: this.props.app.config
-                    })}
+                    <Route key='login' path='/login' element={<LoginModule app={this.props.app} config={this.props.config} />} />
+                    
+                    <Route key='home' path='/' element={<AppModule app={this.props.app} config={this.props.config} />} />
+                    <Route key='flights' path='/flights' element={<FlightsModule app={this.props.app} config={this.props.config} />} />
+                    <Route key='planes' path='/planes' element={<PlanesModule app={this.props.app} config={this.props.config} />} />
+                    
+                    <Route key='404' path='*' element={<NotFound app={this.props.app} config={this.props.config} />} />
                 </Routes>
             </Router>
         );

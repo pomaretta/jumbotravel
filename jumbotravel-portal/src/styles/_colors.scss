@@ -44,3 +44,12 @@ $on-error: #FFFFFF;
     border-color: rgba(29, 255, 70, var(--tw-border-opacity));
 }
 
+.hover\:border-jt-primary:hover {
+    --tw-border-opacity: 1;
+    border-color: rgba(0, 182, 215, var(--tw-border-opacity));
+}
+
+.hover\:border-jt-primary2:hover {
+    --tw-border-opacity: 1;
+    border-color: rgba(29, 255, 70, var(--tw-border-opacity));
+}

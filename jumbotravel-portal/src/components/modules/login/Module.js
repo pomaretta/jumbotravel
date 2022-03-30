@@ -1,6 +1,6 @@
 import React from 'react'
-import Axios from 'axios';
 import { Helmet } from 'react-helmet';
+import { Navigate } from 'react-router-dom';
 
 import LogoSVG from '../../utils/logo';
 
@@ -50,7 +50,7 @@ class LoginForm extends React.Component {
                             Password
                         </label>
                         <div className="flex items-center justify-center w-full">
-                            <input type='text' placeholder=""
+                            <input type='password' placeholder=""
                                 value={this.props.password}
                                 onChange={ev => this.props.setPassword(ev.target.value)}
                                 className="px-3 py-2 | w-full | border-2 border-jt-primary | rounded-md text-gray-700 focus:outline-none" />
@@ -99,8 +99,7 @@ class Login extends React.Component {
     render() {
 
         if (this.props.app.state.isLoggedIn) {
-            // Redirect to dashboard
-            document.location.href = '/dashboard';
+            document.location.href = "/";
         }
 
         return (

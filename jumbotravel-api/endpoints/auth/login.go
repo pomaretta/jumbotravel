@@ -100,6 +100,7 @@ func Login(application *application.Application) func(*gin.Context) {
 			}
 
 			c.JSON(200, gin.H{
+				"id":    *agent.AgentId,
 				"jti":   claims.Id,
 				"token": currentToken,
 				"exp":   time.Unix(claims.ExpiresAt, 0),
@@ -149,6 +150,7 @@ func Login(application *application.Application) func(*gin.Context) {
 		}
 
 		c.JSON(200, gin.H{
+			"id":    *agent.AgentId,
 			"jti":   token.Claims.Id,
 			"token": token.Token,
 			"exp":   time.Unix(token.Claims.ExpiresAt, 0),

@@ -55,13 +55,14 @@ class RestClient {
 
         // Get response
         const data = await response.json();
-    
+
         // Set state with the token
         this.app.setToken(new JWTToken({
             jti: data.jti,
             exp: data.exp,
             iat: data.iat,
-            token: data.token
+            token: data.token,
+            agentId: data.id
         }));
 
         return true;

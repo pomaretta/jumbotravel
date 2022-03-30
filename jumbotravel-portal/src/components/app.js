@@ -10,16 +10,16 @@ import JWTToken from "./utils/token";
 // Routes
 // ==================
 import AppRouter from './router';
-import ROUTES from '../routes';
+
+// Login
 import LoginModule from "./modules/login/Module";
 
-class App extends Component {
+class AppWrapper extends Component {
 
     constructor(props) {
         super(props);
 
         // Routes && Config
-        this.routes = ROUTES;
         this.config = this.props.config;
 
         // API Client
@@ -35,6 +35,10 @@ class App extends Component {
         }
     }
 
+    componentDidMount() {
+        this.loginWithToken();
+    }
+
     getToken() {
         const tokenString = sessionStorage.getItem('auth_token');
         if (!tokenString) {
@@ -46,7 +50,8 @@ class App extends Component {
             jti: userToken.jti,
             exp: userToken.exp,
             iat: userToken.iat,
-            token: userToken.token
+            token: userToken.token,
+            agentId: userToken.id
         })
     }
 
@@ -78,8 +83,8 @@ class App extends Component {
     loginWithToken() {
 
         const token = this.getToken();
-        if (!token) {
-            return false;
+        if (token && !token.isValid() || !token) {
+            return;
         }
 
         // Login
@@ -89,19 +94,25 @@ class App extends Component {
         })
     }
 
-    componentDidMount() {
-        if (!this.state.isLoggedIn) {
-            this.loginWithToken();
-            return <LoginModule app={this} config={this.props.config} />
-        }
+    hasToLogIn() {
+        return !this.state.isLoggedIn || !this.state.token || this.state.token && !this.state.token.isValid();
+    }
+
+    logout() {
+        sessionStorage.removeItem('auth_token');
+        this.setState({
+            isLoggedIn: false,
+            token: null
+        })
     }
 
     render() {
-        return (
-            <AppRouter app={this} />
-        );
+        if (this.hasToLogIn()) {
+            return <LoginModule app={this} config={this.props.config} />
+        }
+        return <AppRouter app={this} />
     }
 
 }
 
-export default App;
+export default AppWrapper;

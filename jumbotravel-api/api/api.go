@@ -41,6 +41,7 @@ func (api *API) initRoutes() {
 	api.initStock()
 	api.initFlight()
 	api.initAuth()
+	api.initAgent()
 
 }
 

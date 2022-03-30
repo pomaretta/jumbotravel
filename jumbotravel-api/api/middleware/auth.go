@@ -15,6 +15,7 @@ var (
 	publicResources = []string{
 		"\\/public\\/.*",
 		"\\/swagger.*",
+		"\\/auth\\/login",
 	}
 )
 

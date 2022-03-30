@@ -4,12 +4,14 @@ class JWTToken {
         jti,
         exp,
         iat,
-        token
+        token,
+        agentId
     }) {
         this.jti = jti;
         this.exp = exp;
         this.iat = iat;
         this.token = token;
+        this.agentId = agentId;
     }
 
     isValid() {
@@ -33,12 +35,17 @@ class JWTToken {
         return Date.parse(this.exp);
     }
 
+    getAgentId() {
+        return this.agentId;
+    }
+
     stringify() {
         return JSON.stringify({
             jti: this.jti,
             exp: this.exp,
             iat: this.iat,
-            token: this.token
+            token: this.token,
+            id: this.agentId
         })
     }
 
