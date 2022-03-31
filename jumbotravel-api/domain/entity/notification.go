@@ -16,6 +16,7 @@ type Notification struct {
 	CreatedAt      *time.Time `json:"created_at"`
 	Seen           *bool      `json:"seen"`
 	Active         *bool      `json:"active"`
+	Signature      *string    `json:"signature"`
 } // @name Notification
 
 func (v *Notification) GetDestFields() []interface{} {

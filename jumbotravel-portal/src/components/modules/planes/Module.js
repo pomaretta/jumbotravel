@@ -4,12 +4,13 @@ import { Helmet } from "react-helmet";
 import Sidebar from '../../base/sidebar';
 import NavBar from '../../base/navbar';
 import Notifications from "../../base/notifications";
+import Context from '../../context/app';
 
 class Module extends Component {
 
     componentDidUpdate() {
-        if (this.props.app.hasToLogIn()) {
-            this.props.app.logout();
+        if (this.context.hasToLogIn()) {
+            this.context.logout();
         }
     }
 
@@ -29,5 +30,7 @@ class Module extends Component {
     }
 
 }
+
+Module.contextType = Context;
 
 export default Module;

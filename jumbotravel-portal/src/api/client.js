@@ -1,9 +1,17 @@
 import { Component } from 'react';
 
 import JWTToken from '../components/utils/token';
+import Agent from './domain/agent_data';
+
+// Models
+import NotificationCollection from '../api/collection/notification';
 
 function requestWithEnvironment({schema, hostname, path}) {
     return `${schema}://${hostname}${path}`;
+}
+
+function getAgentPath({schema, hostname, token, path}) {
+    return `${schema}://${hostname}/agent/${token.getAgentId()}${path}`;
 }
 
 class RestClient {
@@ -66,6 +74,64 @@ class RestClient {
         }));
 
         return true;
+    }
+
+    // ================
+    // NOTIFICATIONS
+    // ================
+
+    async getNotifications({ token }) {
+
+        // Make request
+        const response = await fetch(
+            getAgentPath({
+                schema: this.schema,
+                hostname: this.hostname,
+                token: token,
+                path: '/notifications'
+            }), {
+                method: 'GET',
+            }
+        )
+ 
+        if (response.status !== 200) {
+            throw new Error(`${response.status} ${response.statusText}`);
+        }
+
+        // Get response
+        const data = await response.json();
+
+        // Return data
+        return NotificationCollection.parse(data["result"]);
+    }
+
+    // ================
+    // AGENT DATA
+    // ================
+
+    async getAgentData({ token }) {
+
+        // Make request
+        const response = await fetch(
+            getAgentPath({
+                schema: this.schema,
+                hostname: this.hostname,
+                token: token,
+                path: '/data'
+            }), {
+                method: 'GET',
+            }
+        )
+ 
+        if (response.status !== 200) {
+            throw new Error(`${response.status} ${response.statusText}`);
+        }
+
+        // Get response
+        const data = await response.json();
+
+        // Return data
+        return new Agent(data);
     }
 
 }

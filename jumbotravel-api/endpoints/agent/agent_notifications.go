@@ -1,11 +1,19 @@
 package agent
 
 import (
+	"crypto/x509"
+	"encoding/pem"
+	"errors"
+	"io"
 	"net/http"
+	"os"
 	"strconv"
+	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/application"
+	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/entity"
 )
 
 // Notifications
@@ -77,8 +85,71 @@ func Notifications(application *application.Application) func(*gin.Context) {
 			return
 		}
 
+		// Sign the notifications
+		for idx, notification := range notifications {
+			signature, err := signNotification(&notification, parsedAgentId)
+			notifications[idx].Signature = &signature
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": err.Error(),
+				})
+				return
+			}
+		}
+
 		c.JSON(200, gin.H{
 			"result": notifications,
 		})
 	}
+}
+
+func signNotification(notification *entity.Notification, agentId int) (string, error) {
+
+	file, err := os.Open("rsa.private")
+	if err != nil {
+		return "", err
+	}
+
+	privatePEMData, err := io.ReadAll(file)
+	if err != nil {
+		return "", err
+	}
+
+	block, rest := pem.Decode(privatePEMData)
+	if block == nil || block.Type != "RSA PRIVATE KEY" {
+		return "", errors.New("failed to decode PEM block containing private key " + block.Type)
+	}
+
+	if len(rest) != 0 {
+		return "", errors.New("passed public key contains more than just the private key")
+	}
+
+	key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		return "", err
+	}
+	rsaJWT := jwt.SigningMethodRS256
+
+	now := time.Now().UTC()
+
+	ttl := notification.ExpiresAt
+
+	claims := jwt.MapClaims{
+		"iat":        now.Unix(),
+		"exp":        ttl.Unix(),
+		"sub":        agentId,
+		"iss":        "jumbotravel",
+		"resourceId": notification.ResourceId,
+		"scope":      notification.Scope,
+		"seen":       notification.Seen,
+		"active":     notification.Active,
+	}
+
+	token := jwt.NewWithClaims(rsaJWT, claims)
+	ss, err := token.SignedString(key)
+	if err != nil {
+		return "", err
+	}
+
+	return ss, nil
 }
