@@ -6,12 +6,16 @@ import Agent from './domain/agent_data';
 // Models
 import NotificationCollection from '../api/collection/notification';
 
-function requestWithEnvironment({schema, hostname, path}) {
+function requestWithEnvironment({ schema, hostname, path }) {
     return `${schema}://${hostname}${path}`;
 }
 
-function getAgentPath({schema, hostname, token, path}) {
+function getAgentPath({ schema, hostname, token, path }) {
     return `${schema}://${hostname}/agent/${token.getAgentId()}${path}`;
+}
+
+function requestWithParameters({ url, params = {} }) {
+    return `${url}?${Object.keys(params).map(key => `${key}=${params[key]}`).join('&')}`;
 }
 
 class RestClient {
@@ -49,12 +53,12 @@ class RestClient {
                 hostname: this.hostname,
                 path: '/auth/login'
             }), {
-                method: 'POST',
-                body: JSON.stringify({
-                    dni: identifier,
-                    password: password
-                }),
-            }
+            method: 'POST',
+            body: JSON.stringify({
+                dni: identifier,
+                password: password
+            }),
+        }
         )
 
         if (response.status !== 200) {
@@ -84,16 +88,21 @@ class RestClient {
 
         // Make request
         const response = await fetch(
-            getAgentPath({
-                schema: this.schema,
-                hostname: this.hostname,
-                token: token,
-                path: '/notifications'
+            requestWithParameters({
+                url: getAgentPath({
+                    schema: this.schema,
+                    hostname: this.hostname,
+                    token: token,
+                    path: '/notifications'
+                }),
+                params: {
+                    active: "2"
+                }
             }), {
-                method: 'GET',
-            }
+            method: 'GET',
+        }
         )
- 
+
         if (response.status !== 200) {
             throw new Error(`${response.status} ${response.statusText}`);
         }
@@ -103,6 +112,26 @@ class RestClient {
 
         // Return data
         return NotificationCollection.parse(data["result"]);
+    }
+
+    async markNotificationAsRead({ token, notifications }) {
+
+        // Make request
+        const response = await fetch(
+            getAgentPath({
+                schema: this.schema,
+                hostname: this.hostname,
+                token: token,
+                path: '/notifications'
+            }), {
+            method: 'POST',
+            body: notifications.map(notification => notification.signature).join(',')
+        })
+
+        if (response.status !== 200) {
+            throw new Error(`${response.status} ${response.statusText}`);
+        }
+
     }
 
     // ================
@@ -119,10 +148,10 @@ class RestClient {
                 token: token,
                 path: '/data'
             }), {
-                method: 'GET',
-            }
+            method: 'GET',
+        }
         )
- 
+
         if (response.status !== 200) {
             throw new Error(`${response.status} ${response.statusText}`);
         }

@@ -1,13 +1,17 @@
 package agent
 
 import (
+	"bytes"
 	"crypto/x509"
+	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"io"
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -135,6 +139,7 @@ func signNotification(notification *entity.Notification, agentId int) (string, e
 	ttl := notification.ExpiresAt
 
 	claims := jwt.MapClaims{
+		"jti":        notification.NotificationId,
 		"iat":        now.Unix(),
 		"exp":        ttl.Unix(),
 		"sub":        agentId,
@@ -152,4 +157,141 @@ func signNotification(notification *entity.Notification, agentId int) (string, e
 	}
 
 	return ss, nil
+}
+
+func ReadNotifications(application *application.Application) func(*gin.Context) {
+	return func(c *gin.Context) {
+
+		pattern := regexp.MustCompile("[ \n\t\r]+")
+
+		// Get the agent id
+		agentId := c.Param("id")
+		parsedAgentId, err := strconv.Atoi(agentId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		// Get the notifications token from body
+		body, err := c.GetRawData()
+		if err != nil {
+			c.JSON(400, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		if string(body) == "" {
+			c.JSON(400, gin.H{
+				"error": "No notifications token provided",
+			})
+			return
+		}
+
+		notifications := pattern.Split(string(body), -1)
+		// Verify the notifications
+		var parsedNotifications []entity.Notification
+		for _, notification := range notifications {
+			parsedNotification, err := verifyNotification(notification, parsedAgentId)
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": err.Error(),
+				})
+				return
+			}
+			parsedNotifications = append(parsedNotifications, parsedNotification)
+		}
+
+		// Mark the notifications as read
+		var notificationIds []int
+		for _, notification := range parsedNotifications {
+			notificationIds = append(notificationIds, *notification.NotificationId)
+		}
+
+		rowsAffected, err := application.PostUpdateAgentNotifications(notificationIds)
+		if err != nil {
+			c.JSON(400, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		c.JSON(200, gin.H{
+			"result": rowsAffected,
+		})
+	}
+}
+
+func verifyNotification(token string, agentId int) (entity.Notification, error) {
+
+	file, err := os.Open("rsa.public")
+	if err != nil {
+		return entity.Notification{}, err
+	}
+
+	pubPEMData, err := io.ReadAll(file)
+	if err != nil {
+		return entity.Notification{}, err
+	}
+
+	key, err := jwt.ParseRSAPublicKeyFromPEM(pubPEMData)
+	if err != nil {
+		return entity.Notification{}, err
+	}
+	rsaJWT := jwt.SigningMethodRS256
+
+	parts := strings.Split(token, ".")
+	if len(parts) != 3 {
+		return entity.Notification{}, errors.New("invalid notification token")
+	}
+
+	err = rsaJWT.Verify(strings.Join(parts[0:2], "."), parts[2], key)
+	if err != nil {
+		return entity.Notification{}, err
+	}
+	claimsBytes, err := jwt.DecodeSegment(parts[1])
+	if err != nil {
+		return entity.Notification{}, err
+	}
+
+	dec := json.NewDecoder(bytes.NewBuffer(claimsBytes))
+
+	c := jwt.MapClaims{
+		"jti":        0,
+		"iat":        0,
+		"exp":        0,
+		"sub":        0,
+		"iss":        "",
+		"resourceId": 0,
+		"scope":      "",
+		"seen":       false,
+		"active":     false,
+	}
+	err = dec.Decode(&c)
+	if err != nil {
+		return entity.Notification{}, err
+	}
+
+	// Cast float64 to int
+	notificationAgentId := int(c["sub"].(float64))
+
+	if notificationAgentId != agentId {
+		return entity.Notification{}, errors.New("invalid notification token")
+	}
+
+	parsedId := int(c["jti"].(float64))
+	parsedResourceId := int(c["resourceId"].(float64))
+	parsedScope := c["scope"].(string)
+	parsedSeen := c["seen"].(bool)
+	parsedActive := c["active"].(bool)
+
+	return entity.Notification{
+		NotificationId: &parsedId,
+		ResourceId:     &parsedResourceId,
+		Scope:          &parsedScope,
+		Seen:           &parsedSeen,
+		Active:         &parsedActive,
+	}, nil
 }

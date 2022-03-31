@@ -18,7 +18,7 @@ import LoginModule from "./modules/login/Module";
 
 // Context
 import AppContext from "./context/app";
-import App from "./modules/app";
+import NotificationCollection from "../api/collection/notification";
 
 defineLordIconElement(loadAnimation);
 
@@ -57,6 +57,7 @@ class AppWrapper extends Component {
             notificationsIsOpen: false,
             notifications: null,
             hasNotifications: false,
+            newNotifications: false,
 
         }
     }
@@ -94,7 +95,8 @@ class AppWrapper extends Component {
     // ==================
 
     getToken() {
-        const tokenString = sessionStorage.getItem('auth_token');
+        // const tokenString = sessionStorage.getItem('auth_token');
+        const tokenString = this.getCookie('auth_token');
         if (!tokenString) {
             return null;
         }
@@ -109,9 +111,26 @@ class AppWrapper extends Component {
         })
     }
 
+    getCookie(name) {
+        var value = "; " + document.cookie;
+        var parts = value.split("; " + name + "=");
+        if (parts.length == 2) return parts.pop().split(";").shift();
+    }
+
+    addCookie({
+        token,
+        expires
+    }) {
+        document.cookie = `auth_token=${token}; expires=${expires}; path=/`;
+    }
+
     setToken(token) {
         // Save to sessionStorage
-        sessionStorage.setItem('auth_token', token.stringify());
+        // sessionStorage.setItem('auth_token', token.stringify());
+        this.addCookie({
+            token: token.stringify(),
+            expires: new Date(Date.now() + (1000 * 60 * 60 * 24 * 7))
+        })
         
         this.setState({
             isLoggedIn: true,
@@ -185,14 +204,94 @@ class AppWrapper extends Component {
             return;
         }
 
-        let hasNotifications = false;
-        if (notifications && notifications.getAll().length > 0) {
+        let newNotifications = false;
+        let rawLocalNotifications = JSON.parse(localStorage.getItem('agent_notifications'));
+        let finalNotifications = null;
+        if (rawLocalNotifications && rawLocalNotifications.notifications) {
+
+            // Convert RAW JSON to Collection of Notifications
+            let localNotifications = NotificationCollection.parse(rawLocalNotifications.notifications);
+
+            // =====================
+            // 1. Get new notifications and add to finalNotifications
+            // 2. Update notifications if active has changed
+            // 3. Remove old notifications that are expired and readed
+            // 4. Check if there are notifications that are not readed
+            // =====================
+
+            // 1. Get new notifications and add to finalNotifications
+            
+            // Iterate over new notifications
+            notifications.notifications.forEach(notification => {
+                
+                // Check if notification is already in localNotifications
+                let localNotification = localNotifications.notifications.find(notif => {
+                    return notif.getId() === notification.getId();
+                });
+
+                // If not found, add it at the start
+                if (!localNotification) {
+                    localNotifications.notifications.unshift(notification);
+                    newNotifications = true;
+                }
+
+            });
+
+            // 2. Update notifications if active has changed
+            localNotifications.notifications.forEach(notification => {
+                let notificationInServer = notifications.notifications.find(notif => {
+                    return notif.getId() === notification.getId();
+                });
+                if (notificationInServer && notificationInServer.getActive() !== notification.getActive()) {
+                    notification.setActive(notificationInServer.getActive());
+                }
+                if (notificationInServer && notificationInServer.getSeen() !== notification.getSeen()) {
+                    notification.setSeen(notificationInServer.getSeen());
+                }
+            });
+
+            // 3. Remove old notifications that are expired and readed or not active
+            localNotifications.notifications = localNotifications.notifications.filter(notification => {
+                return !notification.isExpired() && !notification.isSeen() && notification.getActive();
+            });
+
+            // 4. Check if there are notifications that are not readed
+            let notSeenNotifications = localNotifications.notifications.filter(notification => {
+                return !notification.isSeen() && notifications.type != "GLOBAL";
+            });
+            if (notSeenNotifications && notSeenNotifications.length > 0) {
+                newNotifications = true;
+            }
+
+            finalNotifications = localNotifications;
+        } else {
+            finalNotifications = notifications;
+            newNotifications = true;
+
+            // Filter some data to not show 
+            finalNotifications.notifications = finalNotifications.notifications.filter(notification => {
+                return !notification.isExpired() && !notification.isSeen() && notification.getActive();
+            });
+
+        }
+
+        // Update localStorage with finalNotifications
+        localStorage.setItem('agent_notifications', JSON.stringify(finalNotifications));
+
+        let hasNotifications = false
+        if (finalNotifications && finalNotifications.notifications && finalNotifications.notifications.length > 0) {
             hasNotifications = true;
         }
 
+        if (finalNotifications && finalNotifications.notifications.length == 0) {
+            hasNotifications = false;
+            newNotifications = false;
+        }
+
         this.setState({
-            notifications: notifications,
-            hasNotifications: hasNotifications
+            notifications: finalNotifications,
+            newNotifications: newNotifications,
+            hasNotifications: hasNotifications,
         });
 
         return this.state.notifications;
@@ -206,6 +305,38 @@ class AppWrapper extends Component {
         this.setState({
             notificationsIsOpen: !this.state.notificationsIsOpen
         })
+    }
+
+    async markNotificationsRead(notificationIds) {
+
+        if (!notificationIds || notificationIds.length === 0) {
+            return;
+        }
+
+        // If notificationsIds is a single notification, convert it to an array
+        if (!Array.isArray(notificationIds)) {
+            notificationIds = [notificationIds];
+        }
+
+        let notifications = this.state.notifications.getAll().filter(notification => {
+            return notificationIds.includes(notification.getId());
+        });
+
+        // Mark notifications as read
+        try {
+            await this.api.markNotificationAsRead({
+                token: this.state.token,
+                notifications: notifications
+            });
+        } catch (e) {
+            console.error(e);
+            return;
+        }
+
+        // Update notifications
+        await this.getNotifications();
+
+        return;
     }
 
     // END NOTIFICATIONS
@@ -266,9 +397,11 @@ class AppWrapper extends Component {
             notificationsIsOpen: this.state.notificationsIsOpen,
             notifications: this.state.notifications,
             hasNotifications: this.state.hasNotifications,
+            newNotifications: this.state.newNotifications,
             getNotifications: this.getNotifications.bind(this),
             isNotificationsOpen: this.isNotificationsOpen.bind(this),
             setNotificationsOpen: this.setNotificationsOpen.bind(this),
+            markNotificationsRead: this.markNotificationsRead.bind(this),
             
             // =====================
             // Auth

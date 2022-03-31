@@ -82,7 +82,7 @@ class AppRouter extends React.Component {
             <Router>
                 <Routes>
                     <Route key='login' path='/login' element={<LoginModule app={this.props.app} config={this.props.config} />} />
-                    <Route key='home' path='/' element={<AppModule app={this.props.app} config={this.props.config} />} />
+                    <Route key='home' path='/' element={<FlightsModule app={this.props.app} config={this.props.config} />} />
                     <Route key='flights' path='/flights' element={<FlightsModule app={this.props.app} config={this.props.config} />} />
                     <Route key='planes' path='/planes' element={<PlanesModule app={this.props.app} config={this.props.config} />} />
                     <Route key='404' path='*' element={<NotFound app={this.props.app} config={this.props.config} />} />

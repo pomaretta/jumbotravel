@@ -25,3 +25,11 @@ func (db *MySQL) FetchAgentNotifications(agentId int, seen, active, expired, pop
 
 	return
 }
+
+func (db *MySQL) UpdateAgentNotifications(notificationIds []int) (int64, error) {
+
+	qb := &agentbuilders.ReadNotificationsQueryBuilder{}
+	qb.SetNotificationIds(notificationIds)
+
+	return db.Update(qb)
+}

@@ -21,9 +21,11 @@ const AppContext = React.createContext({
     notificationsIsOpen: false,
     notifications: [],
     hasNotifications: false,
+    newNotifications: false,
     getNotifications: () => {},
     isNotificationsOpen: () => {},
     setNotificationsOpen: () => {},
+    markNotificationsRead: () => {},
 
     // =====================
     // Auth

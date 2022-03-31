@@ -128,7 +128,7 @@ class Navbar extends React.Component {
                   {/* Notification Bell */}
                   <div className="ml-2 rounded-md text-gray-400 hover:text-gray-700 hover:bg-jt-primary focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
                     <lord-icon
-                      trigger={this.context.hasNotifications ? "loop" : ""}
+                      trigger={this.context.newNotifications ? "loop" : ""}
                       src="/resources/notification-bell.json"
                       style={{
                         width: '25px',

@@ -5,8 +5,8 @@ class Notification {
 
     constructor({
         notification_id,
-        scope, 
-        resource_id, 
+        scope,
+        resource_id,
         title,
         message,
         link,
@@ -35,6 +35,10 @@ class Notification {
         this.signature = signature;
     }
 
+    getId() {
+        return this.notification_id;
+    }
+
     isPopup() {
         return this.popup;
     }
@@ -47,8 +51,28 @@ class Notification {
         return this.seen;
     }
 
-    getSignature() {
-        return this.signature;
+    isExpired() {
+        // Check if notification is expired with UTC time
+        var now = new Date();
+        var utc_timestamp = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
+            now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
+        return Date.parse(this.expires_at) < utc_timestamp;
+    }
+
+    getActive() {
+        return this.active;
+    }
+
+    setActive(active) {
+        this.active = active;
+    }
+
+    getSeen() {
+        return this.seen;
+    }
+
+    setSeen(seen) {
+        this.seen = seen;
     }
 
     getNotification() {

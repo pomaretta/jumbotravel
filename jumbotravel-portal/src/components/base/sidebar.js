@@ -58,7 +58,7 @@ class Sidebar extends Component {
                         <div className="mt-auto-important">
                             <li
                                 className={classNames(
-                                    this.context.hasNotifications ? "border-red-500" : "",
+                                    this.context.newNotifications ? "border-red-500" : "",
                                     "relative cursor-pointer flex flex-row items-center justify-end h-11 focus:outline-none hover:bg-gray-50 text-gray-600 hover:text-gray-800 border-l-4 border-transparent hover:border-jt-primary pr-6"
                                 )}
 
@@ -83,7 +83,7 @@ class Sidebar extends Component {
                                     </span>
                                 </a> */}
                                 <lord-icon
-                                    trigger={this.context.hasNotifications ? "loop" : ""}
+                                    trigger={this.context.newNotifications ? "loop" : ""}
                                     src="/resources/notification-bell.json"
                                     style={{
                                         width: '24px',
@@ -145,7 +145,16 @@ class Sidebar extends Component {
                                     <div>
                                     </div>
                                     <div>
-                                        <button className="group bg-jt-primary px-2 w-auto items-center text-white rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-red-500 hover:text-white inline-flex h-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700 justify-center transition-all duration-150" data-dismiss-target="#toast-success" aria-label="Close">
+                                        <button 
+                                            onClick={() => {
+                                                this.context.markNotificationsRead(
+                                                    this.context.notifications.notifications.map(notification => {
+                                                        return notification.getId()
+                                                    })
+                                                )
+                                            }}
+                                            className="group bg-jt-primary px-2 w-auto items-center text-white rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-red-500 hover:text-white inline-flex h-8  justify-center transition-all duration-150" data-dismiss-target="#toast-success" aria-label="Close"
+                                        >
                                             <span className="sr-only">Close</span>
                                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd"></path></svg>
                                             <div className="hidden group-hover:block">

@@ -14,15 +14,14 @@ class NotificationCollection {
 
     getPopup() {
         return this.notifications.copyWithin().filter(notification => {
-            if (!notification.isPopup()) {
+            if (notification.isPopup()) {
                 return notification;
         }});
-        
     }
 
     getNotPopup() {
         return this.notifications.copyWithin().filter(notification => {
-            if (notification.isPopup()) {
+            if (!notification.isPopup()) {
                 return notification;
         }});
     }

@@ -190,3 +190,54 @@ func (qb *NotificationsQueryBuilder) BuildQuery() (string, []interface{}, error)
 
 	return query, args, nil
 }
+
+type ReadNotificationsQueryBuilder struct {
+	builders.MySQLQueryBuilder
+
+	notificationIds []int
+}
+
+func (qb *ReadNotificationsQueryBuilder) SetNotificationIds(notificationIds []int) {
+	qb.notificationIds = notificationIds
+}
+
+func (qb *ReadNotificationsQueryBuilder) buildWhereClauses() (string, []interface{}, error) {
+
+	partialQuery := "where 1=1"
+	var args []interface{}
+
+	if len(qb.notificationIds) == 0 {
+		return "", nil, fmt.Errorf("notification ids are required")
+	}
+
+	partialQuery = fmt.Sprintf("%s and n.notification_id in (", partialQuery)
+	for idx, notificationId := range qb.notificationIds {
+		if idx == 0 {
+			partialQuery = fmt.Sprintf("%s?", partialQuery)
+			args = append(args, notificationId)
+			continue
+		}
+		partialQuery = fmt.Sprintf("%s,?", partialQuery)
+		args = append(args, notificationId)
+	}
+	partialQuery = fmt.Sprintf("%s)", partialQuery)
+
+	return partialQuery, args, nil
+}
+
+func (qb *ReadNotificationsQueryBuilder) BuildQuery() (string, []interface{}, error) {
+
+	whereClause, args, err := qb.buildWhereClauses()
+	if err != nil {
+		return "", nil, err
+	}
+
+	query := fmt.Sprintf(`
+		UPDATE 
+			notifications n 
+		SET n.seen = true 
+		%s
+	`, whereClause)
+
+	return query, args, nil
+}
