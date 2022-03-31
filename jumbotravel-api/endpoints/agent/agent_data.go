@@ -10,7 +10,7 @@ import (
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/entity"
 )
 
-// Agents
+// Data
 //
 // @Router /agent/:id/data [get]
 // @Tags Agent
@@ -22,7 +22,7 @@ import (
 // @Success 200 {object} response.JSONResult{result=[]response.AgentData} "Get agent data."
 // @Failure 400 {object} response.JSONError "Bad request"
 // @Failure 500 {object} response.JSONError "Internal server error"
-func AgentData(application *application.Application) func(*gin.Context) {
+func Data(application *application.Application) func(*gin.Context) {
 	return func(c *gin.Context) {
 
 		agentId := c.Param("id")

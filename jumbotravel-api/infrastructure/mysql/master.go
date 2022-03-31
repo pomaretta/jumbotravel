@@ -87,3 +87,27 @@ func (db *MySQL) FetchMasterProducts(productId, productCode int) (s []entity.Pro
 
 	return
 }
+
+func (db *MySQL) FetchNotifications(notificationId, resourceId []int, notificationType, scope []string, seen, active, expired, popup string) (s []entity.Notification, err error) {
+
+	qb := &masterbuilders.NotificationQueryBuilder{}
+	qb.SetNotificationId(notificationId)
+	qb.SetResourceId(resourceId)
+	qb.SetNotificationType(notificationType)
+	qb.SetScope(scope)
+	qb.SetSeen(seen)
+	qb.SetActive(active)
+	qb.SetExpired(expired)
+	qb.SetPopup(popup)
+
+	ent, err := db.Fetch(&entity.Notification{}, qb)
+	if err != nil {
+		return
+	}
+
+	for _, e := range ent {
+		s = append(s, e.(entity.Notification))
+	}
+
+	return
+}

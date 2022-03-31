@@ -25,6 +25,7 @@ type MySQLFetcher interface {
 	FetchMasterAgents(agentId int, dni, agentType, email string, active bool) ([]entity.Agent, error)
 	FetchMasterAirplanes(airplaneId, flightNumber int, carrier string) ([]entity.Airplane, error)
 	FetchMasterProducts(productId, productCode int) ([]entity.Product, error)
+	FetchNotifications(notificationId, resourceId []int, notificationType, scope []string, seen, active, expired, popup string) ([]entity.Notification, error)
 
 	// Stock
 	FetchStock(stockId, airplaneId, productId, productCode int) ([]dto.Stock, error)
@@ -39,4 +40,7 @@ type MySQLFetcher interface {
 
 	// Access Logging
 	PutAccessLogging(requestId, tokenId, tokenName, ip, method, path, query, errorMessage string, status int) error
+
+	// Agent
+	FetchAgentNotifications(agentId int, seen, active, expired, popup string) ([]entity.Notification, error)
 }

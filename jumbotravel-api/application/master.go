@@ -17,3 +17,7 @@ func (app *Application) GetMasterAirplanes(airplaneId, flightNumber int, carrier
 func (app *Application) GetMasterProducts(productId, productCode int) ([]entity.Product, error) {
 	return app.MySQLFetcher.FetchMasterProducts(productId, productCode)
 }
+
+func (app *Application) GetNotifications(notificationId, resourceId []int, notificationType, scope []string, seen, active, expired, popup string) ([]entity.Notification, error) {
+	return app.MySQLFetcher.FetchNotifications(notificationId, resourceId, notificationType, scope, seen, active, expired, popup)
+}

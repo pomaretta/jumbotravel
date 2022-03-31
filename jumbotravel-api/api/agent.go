@@ -8,7 +8,8 @@ func (api *API) initAgent() {
 
 	agentGroup := api.handler.Group("/agent/:id")
 	{
-		agentGroup.GET("/data", agent.AgentData(api.application))
+		agentGroup.GET("/data", agent.Data(api.application))
+		agentGroup.GET("/notifications", agent.Notifications(api.application))
 	}
 
 }

@@ -46,6 +46,6 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/swaggo/swag v1.8.0
 	golang.org/x/net v0.0.0-20220325170049-de3da57026de
-	golang.org/x/sys v0.0.0-20220329152356-43be30ef3008 // indirect
+	golang.org/x/sys v0.0.0-20220330033206-e17cdc41300f // indirect
 	golang.org/x/tools v0.1.10 // indirect
 )

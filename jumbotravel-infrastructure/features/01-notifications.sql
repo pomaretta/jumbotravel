@@ -5,14 +5,14 @@ CREATE TABLE IF NOT EXISTS notifications (
 
     notification_id             INT NOT NULL AUTO_INCREMENT,
 
-    -- Scope (user/group/flight/global)
+    -- Scope (agent/group/flight/global)
     scope                       VARCHAR(255) NOT NULL,
     -- Can be used to link to resource (if provided must match with scope)
     resource_id                 INT NULL,
 
     -- Notification
     title                       VARCHAR(255) NOT NULL,
-    message                     VARCHAR(255) NOT NULL,
+    message                     VARCHAR(255) NULL,
 
     -- Link
     link                        TEXT NULL,
@@ -20,6 +20,9 @@ CREATE TABLE IF NOT EXISTS notifications (
 
     -- Severity
     type                        VARCHAR(255) NOT NULL,
+
+    -- Shown
+    popup                       BOOLEAN NOT NULL DEFAULT FALSE,
 
     -- Dates
     expires_at                  TIMESTAMP NOT NULL,
