@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import APIError from './error';
 
 import JWTToken from '../components/utils/token';
 import Agent from './domain/agent_data';
@@ -35,10 +36,30 @@ class RestClient {
         this.schema = this.config.schema;
     }
 
-    validate({
+    async validate({
         token
     }) {
-        return;
+        const response = await fetch(
+            getAgentPath({
+                schema: this.schema,
+                hostname: this.hostname,
+                token: token,
+                path: '/validate'
+            }), {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token.getToken()}`
+                }
+            }
+        )
+        if (response.status !== 200) {
+            throw new APIError(
+                "error on validation",
+                response.status,
+                response.statusText
+            )
+        }
+        return true;
     }
 
     async authorize({
@@ -58,11 +79,14 @@ class RestClient {
                 dni: identifier,
                 password: password
             }),
-        }
-        )
+        });
 
         if (response.status !== 200) {
-            throw new Error(`${response.status} ${response.statusText}`);
+            throw new APIError(
+                "error on authorization",
+                response.status,
+                response.statusText
+            )
         }
 
         // Get response
@@ -96,19 +120,32 @@ class RestClient {
                     path: '/notifications'
                 }),
                 params: {
-                    active: "2"
+                    active: "1",
+                    seen: "2",
+                    expired: "2",
                 }
             }), {
             method: 'GET',
-        }
-        )
+            headers: {
+                'Authorization': `Bearer ${token.getToken()}`
+            }
+        });
 
         if (response.status !== 200) {
-            throw new Error(`${response.status} ${response.statusText}`);
+            throw new APIError(
+                "error on getNotifications",
+                response.status,
+                response.statusText
+            )
         }
 
         // Get response
         const data = await response.json();
+
+        let isNullResponse = data["result"] === null;
+        if (isNullResponse) {
+            return new NotificationCollection([]);
+        }
 
         // Return data
         return NotificationCollection.parse(data["result"]);
@@ -125,11 +162,18 @@ class RestClient {
                 path: '/notifications'
             }), {
             method: 'POST',
-            body: notifications.map(notification => notification.signature).join(',')
+            body: notifications.map(notification => notification.signature).join(','),
+            headers: {
+                'Authorization': `Bearer ${token.getToken()}`
+            },
         })
 
         if (response.status !== 200) {
-            throw new Error(`${response.status} ${response.statusText}`);
+            throw new APIError(
+                "error on markNotificationAsRead",
+                response.status,
+                response.statusText
+            )
         }
 
     }
@@ -149,11 +193,18 @@ class RestClient {
                 path: '/data'
             }), {
             method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token.getToken()}`
+            },
         }
         )
 
         if (response.status !== 200) {
-            throw new Error(`${response.status} ${response.statusText}`);
+            throw new APIError(
+                "error on getAgentData",
+                response.status,
+                response.statusText
+            )
         }
 
         // Get response

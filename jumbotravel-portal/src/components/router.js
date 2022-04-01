@@ -17,6 +17,11 @@ class AppRouter extends React.Component {
 
     initApplication() {
 
+        // Validate session
+        this.context.validateSession({
+            token: this.context.token
+        });
+
         // Agent Data
         this.context.updateAgent();
 
@@ -62,7 +67,10 @@ class AppRouter extends React.Component {
         // 1 MINUTE
         // ==================
         this.context.addInterval(setInterval(() => {
-            // console.log('Interval');
+            // Validate session
+            this.context.validateSession({
+                token: this.context.token
+            });
         }, 60000));
 
     }

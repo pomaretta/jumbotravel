@@ -1,5 +1,4 @@
 import { Component } from 'react';
-import { Link } from 'react-router-dom';
 import AppContext from "../context/app";
 
 function classNames(...classes) {
@@ -107,12 +106,13 @@ class PopupNotification extends Component {
 
     render() {
         return (
-            <Link
+            <a
                 className="relative flex items-center w-full max-w-xs p-4 space-x-4 text-gray-500 bg-white divide-x divide-gray-200 rounded-lg shadow space-x overflow-hidden"
                 style={{
                     display: this.state.show ? 'flex' : 'none'
                 }}
-                to={this.props.link ? this.props.link : ''}
+                href={this.props.link ? this.props.link : ''}
+                target={this.props.extra && this.props.extra["target"] ? this.props.extra["target"] : ''}
                 onClick={() => {
                     // Remove the notification from the queue
                     this.context.markNotificationsRead(this.props.notification_id);
@@ -135,7 +135,7 @@ class PopupNotification extends Component {
                         }}
                     ></div>
                 </div>
-            </Link>
+            </a>
         )
     }
 

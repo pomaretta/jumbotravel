@@ -26,6 +26,12 @@ class Notification {
         this.message = message;
         this.link = link;
         this.extra = extra;
+        // Parse JSON extra
+        try {
+            this.extra = JSON.parse(extra);
+        } catch (e) {
+            this.extra = {};
+        }
         this.type = type;
         this.popup = popup;
         this.expires_at = expires_at;
@@ -81,6 +87,56 @@ class Notification {
 
     getPopup() {
         return <PopupNotification {...this} />;
+    }
+
+    update(notification) {
+
+        // Title has changed
+        if (this.title !== notification.title) {
+            this.title = notification.title;
+        }
+
+        // Message has changed
+        if (this.message !== notification.message) {
+            this.message = notification.message;
+        }
+
+        // Link has changed
+        if (this.link !== notification.link) {
+            this.link = notification.link;
+        }
+
+        // Extra has changed
+        if (this.extra !== notification.extra) {
+            this.extra = notification.extra;
+        }
+
+        // Type has changed
+        if (this.type !== notification.type) {
+            this.type = notification.type;
+        }
+
+        // Popup has changed
+        if (this.popup !== notification.popup) {
+            this.popup = notification.popup;
+        }
+        
+        // Seen has changed
+        if (this.seen !== notification.seen) {
+            this.seen = notification.seen;
+        }
+
+        // Active has changed
+        if (this.active !== notification.active) {
+            this.active = notification.active;
+        }
+        
+        // Signature has changed
+        if (this.signature !== notification.signature) {
+            this.signature = notification.signature;
+        }
+
+        return;
     }
 
 }

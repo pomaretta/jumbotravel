@@ -62,6 +62,29 @@ func AuthenticationMiddleware(application *application.Application) gin.HandlerF
 			return
 		}
 
+		// TODO: Check if token is active
+		tokens, err := application.GetAuthToken(-1, claims.Id, "2", "2", true)
+		if err != nil {
+			response.Unauthorized(c)
+			c.Abort()
+			return
+		}
+
+		// If token is not on the BBDD, it is not valid
+		if len(tokens) == 0 {
+			response.Unauthorized(c)
+			c.Abort()
+			return
+		}
+
+		token := tokens[0]
+		isActive := *token.Active
+		if !isActive {
+			response.Unauthorized(c)
+			c.Abort()
+			return
+		}
+
 		for _, resource := range claims.Resources {
 
 			resourceMethod := strings.SplitN(resource, "/", 2)[0]

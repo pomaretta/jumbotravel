@@ -35,6 +35,7 @@ const AppContext = React.createContext({
     hasToLogIn: () => {},
     logout: () => {},
     login: () => {},
+    validateSession: () => {},
 
 });
 

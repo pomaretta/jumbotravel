@@ -10,10 +10,30 @@ type AuthTokenQueryBuilder struct {
 	builders.MySQLQueryBuilder
 
 	agentId int
+	jti     string
+	active  string
+	expired string
+	single  bool
 }
 
 func (qb *AuthTokenQueryBuilder) SetAgentId(agentId int) {
 	qb.agentId = agentId
+}
+
+func (qb *AuthTokenQueryBuilder) SetJTI(jti string) {
+	qb.jti = jti
+}
+
+func (qb *AuthTokenQueryBuilder) SetActive(active string) {
+	qb.active = active
+}
+
+func (qb *AuthTokenQueryBuilder) SetExpired(expired string) {
+	qb.expired = expired
+}
+
+func (qb *AuthTokenQueryBuilder) SetSingle(single bool) {
+	qb.single = single
 }
 
 func (qb *AuthTokenQueryBuilder) buildWhereClause() (string, []interface{}, error) {
@@ -21,18 +41,23 @@ func (qb *AuthTokenQueryBuilder) buildWhereClause() (string, []interface{}, erro
 	partialQuery := "where 1=1"
 	args := []interface{}{}
 
-	if qb.agentId < 1 {
-		return "", args, fmt.Errorf("agentId is required")
+	if qb.agentId > -1 {
+		partialQuery = fmt.Sprintf("%s and au.agent_id = ?", partialQuery)
+		args = append(args, qb.agentId)
 	}
 
-	partialQuery = fmt.Sprintf("%s and au.agent_id = ?", partialQuery)
-	args = append(args, qb.agentId)
+	if qb.jti != "" {
+		partialQuery = fmt.Sprintf("%s and au.id = ?", partialQuery)
+		args = append(args, qb.jti)
+	}
 
-	// The token must be active
-	partialQuery = fmt.Sprintf("%s and au.active = true", partialQuery)
+	if qb.active != "" && qb.active == "1" {
+		partialQuery = fmt.Sprintf("%s and au.active = true", partialQuery)
+	}
 
-	// The token must be valid
-	partialQuery = fmt.Sprintf("%s and au.expires_at > now()", partialQuery)
+	if qb.expired != "" && qb.expired == "1" {
+		partialQuery = fmt.Sprintf("%s and au.expires_at > now()", partialQuery)
+	}
 
 	return partialQuery, args, nil
 }
@@ -45,11 +70,21 @@ func (qb *AuthTokenQueryBuilder) BuildQuery() (string, []interface{}, error) {
 	}
 
 	orderClause := "order by au.issued_at desc"
-	limitClause := "limit 1"
+	limitClause := ""
+	if qb.single {
+		limitClause = "limit 1"
+	}
 
 	query := fmt.Sprintf(`
 		select 
-			au.token
+			au.id,
+			au.subjet,
+			au.token,
+			au.agent_id,
+			au.issued_at,
+			au.expires_at,
+			au.active,
+			au.created_at
 		from agent_auth au
 		%s
 		%s

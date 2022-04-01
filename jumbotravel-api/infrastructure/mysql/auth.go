@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/dto"
+	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/entity"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/infrastructure/builders/authbuilders"
 )
 
@@ -43,28 +44,23 @@ func (db *MySQL) FetchAgentAuth(dni string) (dto.AgentAuth, error) {
 	return ent[0].(dto.AgentAuth), nil
 }
 
-func (db *MySQL) FetchAuthToken(agentId int) (string, error) {
+func (db *MySQL) FetchAuthToken(agentId int, jti string, active string, expired string, single bool) (s []entity.Token, err error) {
 
 	qb := &authbuilders.AuthTokenQueryBuilder{}
 	qb.SetAgentId(agentId)
+	qb.SetJTI(jti)
+	qb.SetActive(active)
+	qb.SetExpired(expired)
+	qb.SetSingle(single)
 
-	query, args, err := qb.BuildQuery()
+	ent, err := db.Fetch(&entity.Token{}, qb)
 	if err != nil {
-		return "", err
+		return
 	}
 
-	rows, err := db.con.Query(query, args...)
-	if err != nil {
-		return "", err
+	for _, e := range ent {
+		s = append(s, e.(entity.Token))
 	}
 
-	var token string
-	for rows.Next() {
-		err = rows.Scan(&token)
-		if err != nil {
-			return "", err
-		}
-	}
-
-	return token, nil
+	return
 }

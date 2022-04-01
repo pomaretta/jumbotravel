@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/dto"
+	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/entity"
 )
 
 func (app *Application) PutToken(tokenId, subject, token string, agentId int, issuedAt, expiresAt time.Time) error {
@@ -14,6 +15,6 @@ func (app *Application) GetAgentAuth(dni string) (dto.AgentAuth, error) {
 	return app.MySQLFetcher.FetchAgentAuth(dni)
 }
 
-func (app *Application) GetAuthToken(agentId int) (string, error) {
-	return app.MySQLFetcher.FetchAuthToken(agentId)
+func (app *Application) GetAuthToken(agentId int, jti, active, expired string, single bool) ([]entity.Token, error) {
+	return app.MySQLFetcher.FetchAuthToken(agentId, jti, active, expired, single)
 }

@@ -1,5 +1,4 @@
 import { Component } from "react";
-import { Link } from "react-router-dom";
 import AppContext from "../context/app";
 
 function classNames(...classes) {
@@ -102,41 +101,47 @@ class Notification extends Component {
 
     render() {
         return (
-            <Link 
-                id="toast-success" 
+            <div
                 className={classNames(
                     this.getOutlineBackground(this.props.type),
-                    "flex | cursor-pointer hover:shadow-md transition-all duration-200 ease-in-out | items-center w-full p-2 mb-2 text-gray-500 bg-white rounded-lg outline outline-2"
+                    "flex | hover:shadow-md transition-all duration-200 ease-in-out | items-center w-full p-2 mb-2 text-gray-500 bg-white rounded-lg outline outline-2"
                 )}
-                role="alert"
-                to={
-                    this.props.link ? this.props.link : ''
-                }
             >
-                <div 
-                    className={classNames(
-                        this.getBackground(this.props.type),
-                        "inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-green-500 rounded-lg"
-                    )}
-                >
-                    {
-                        this.getSVG(this.props.type)
+                <a
+                    id="toast-success"
+                    className="flex | items-center | cursor-pointer"
+                    role="alert"
+                    href={
+                        this.props.link ? this.props.link : ''
                     }
-                </div>
-                <div className="ml-3 text-sm font-normal">
-                    {this.props.title}
-                </div>
-                <button 
+                    target={this.props.extra && this.props.extra["target"] ? this.props.extra["target"] : ''}
+                >
+                    <div
+                        className={classNames(
+                            this.getBackground(this.props.type),
+                            "inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-green-500 rounded-lg"
+                        )}
+                    >
+                        {
+                            this.getSVG(this.props.type)
+                        }
+                    </div>
+                    <div className="ml-3 text-sm font-normal">
+                        {this.props.title}
+                    </div>
+
+                </a>
+                <button
+                    type="button"
+                    className="ml-auto -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex h-8 w-8" data-dismiss-target="#toast-success" aria-label="Close"
                     onClick={() => {
                         this.context.markNotificationsRead(this.props.notification_id);
                     }}
-                    type="button" 
-                    className="ml-auto -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex h-8 w-8" data-dismiss-target="#toast-success" aria-label="Close"
                 >
                     <span className="sr-only">Close</span>
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"></path></svg>
                 </button>
-            </Link>
+            </div>
         )
     }
 

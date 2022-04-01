@@ -61,6 +61,16 @@ func (qb *NotificationsQueryBuilder) buildGlobalWhereClause() (string, []interfa
 		args = append(args, true)
 	}
 
+	if qb.active != "0" && qb.active == "2" {
+		partialQuery = fmt.Sprintf("%s and n.active = ?", partialQuery)
+		args = append(args, false)
+	}
+
+	if qb.popup != "0" && qb.popup == "2" {
+		partialQuery = fmt.Sprintf("%s and n.popup = ?", partialQuery)
+		args = append(args, false)
+	}
+
 	return partialQuery, args, nil
 }
 
@@ -100,6 +110,21 @@ func (qb *NotificationsQueryBuilder) buildAgentWhereClause() (string, []interfac
 		args = append(args, true)
 	}
 
+	if qb.active != "0" && qb.active == "2" {
+		partialQuery = fmt.Sprintf("%s and n.active = ?", partialQuery)
+		args = append(args, false)
+	}
+
+	if qb.seen != "0" && qb.seen == "2" {
+		partialQuery = fmt.Sprintf("%s and n.seen = ?", partialQuery)
+		args = append(args, false)
+	}
+
+	if qb.popup != "0" && qb.popup == "2" {
+		partialQuery = fmt.Sprintf("%s and n.popup = ?", partialQuery)
+		args = append(args, false)
+	}
+
 	return partialQuery, args, nil
 }
 
@@ -136,6 +161,21 @@ func (qb *NotificationsQueryBuilder) buildFlightWhereClause() (string, []interfa
 	if qb.popup != "0" && qb.popup == "1" {
 		partialQuery = fmt.Sprintf("%s and n.popup = ?", partialQuery)
 		args = append(args, true)
+	}
+
+	if qb.active != "0" && qb.active == "2" {
+		partialQuery = fmt.Sprintf("%s and n.active = ?", partialQuery)
+		args = append(args, false)
+	}
+
+	if qb.seen != "0" && qb.seen == "2" {
+		partialQuery = fmt.Sprintf("%s and n.seen = ?", partialQuery)
+		args = append(args, false)
+	}
+
+	if qb.popup != "0" && qb.popup == "2" {
+		partialQuery = fmt.Sprintf("%s and n.popup = ?", partialQuery)
+		args = append(args, false)
 	}
 
 	return partialQuery, args, nil

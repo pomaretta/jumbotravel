@@ -23,6 +23,10 @@ run:
 	$(call check_defined, CONF, ENV of API)
 	./jumbotravel-api -c $(CONF)
 
+test: build
+	$(call check_defined, CONF, ENV of API)
+	PWS_WORKER=DEV ./jumbotravel-api -c $(CONF)
+
 cdk-install:
 	@echo "[Install Deps] running phase"
 	go get -u github.com/swaggo/swag/cmd/swag@v1.8.0

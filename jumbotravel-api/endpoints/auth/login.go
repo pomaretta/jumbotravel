@@ -74,8 +74,10 @@ func Login(application *application.Application) func(*gin.Context) {
 		}
 
 		// TODO: Check if the agent has an active token
-		currentToken, err := application.GetAuthToken(*agent.AgentId)
-		if err == nil && currentToken != "" {
+		tokens, err := application.GetAuthToken(*agent.AgentId, "", "1", "2", true)
+		if err == nil && len(tokens) > 0 {
+
+			currentToken := *tokens[0].Token
 
 			// Split the token with "."
 			tokenParts := bytes.Split([]byte(currentToken), []byte("."))

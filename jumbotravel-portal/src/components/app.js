@@ -19,6 +19,7 @@ import LoginModule from "./modules/login/Module";
 // Context
 import AppContext from "./context/app";
 import NotificationCollection from "../api/collection/notification";
+import APIError from "../api/error";
 
 defineLordIconElement(loadAnimation);
 
@@ -80,7 +81,13 @@ class AppWrapper extends Component {
         if (this.state.intervals[interval]) {
             throw new Error(`Interval with id ${interval} already exists`);
         }
-        this.state.intervals[interval] = interval;
+        this.setState({
+            intervals: {
+                ...this.state.intervals,
+                [interval]: interval
+            }
+        })
+        // this.state.intervals[interval] = interval;
     }
 
     removeInterval(id) {
@@ -114,7 +121,7 @@ class AppWrapper extends Component {
     getCookie(name) {
         var value = "; " + document.cookie;
         var parts = value.split("; " + name + "=");
-        if (parts.length == 2) return parts.pop().split(";").shift();
+        if (parts.length === 2) return parts.pop().split(";").shift();
     }
 
     addCookie({
@@ -122,6 +129,10 @@ class AppWrapper extends Component {
         expires
     }) {
         document.cookie = `auth_token=${token}; expires=${expires}; path=/`;
+    }
+
+    removeCookie(name) {
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/;`;
     }
 
     setToken(token) {
@@ -140,7 +151,7 @@ class AppWrapper extends Component {
 
     login({ identifier, password }) {
 
-        // Login
+        // TODO: Handle error
         let ok = this.api.authorize({
             identifier: identifier,
             password: password
@@ -172,7 +183,8 @@ class AppWrapper extends Component {
     }
 
     logout() {
-        sessionStorage.removeItem('auth_token');
+        // sessionStorage.removeItem('auth_token');
+        this.removeCookie('auth_token');
         this.clearIntervals();
         this.setState({
             isLoggedIn: false,
@@ -182,6 +194,30 @@ class AppWrapper extends Component {
             notifications: [],
             hasNotifications: false
         })
+    }
+
+    async validateSession({token}) {
+
+        // Validate token
+        if (!token || !token.isValid()) {
+            this.logout();
+        }
+
+        // Validate agent
+        let validate = null;
+        try {
+            validate = await this.api.validate({
+                token: token
+            });
+        } catch (e) {
+            this.logout();
+        }
+
+        if (!validate) {
+            this.logout();
+        }
+
+        return;
     }
 
     // END AUTHENTICATION
@@ -200,7 +236,11 @@ class AppWrapper extends Component {
             });
         } catch (e) {
             // TODO: Handle error
-            console.error(e);
+            if (e instanceof APIError) {
+                if (e.getStatus() === 401) {
+                    this.logout();
+                }
+            }
             return;
         }
 
@@ -217,6 +257,7 @@ class AppWrapper extends Component {
             // 2. Update notifications if active has changed
             // 3. Remove old notifications that are expired and readed
             // 4. Check if there are notifications that are not readed
+            // 5. Remove old notifications that are expired and readed (commonly forced by the system)
             // =====================
 
             // 1. Get new notifications and add to finalNotifications
@@ -263,6 +304,26 @@ class AppWrapper extends Component {
                 newNotifications = true;
             }
 
+            // 5. Get all notifications that are not in new notifications
+            let notInNewNotifications = localNotifications.notifications.filter(notification => {
+                return !notifications.notifications.find(notif => {
+                    return notif.getId() === notification.getId();
+                });
+            });
+            // Remove all notifications that are not in new notifications
+            notInNewNotifications.forEach(notification => {
+                localNotifications.notifications.splice(localNotifications.notifications.indexOf(notification), 1);
+            });
+
+            // 6. Update localNotifications with new notifications
+            localNotifications.notifications.forEach(notification => {
+                let notificationInServer = notifications.notifications.find(notif => {
+                    return notif.getId() === notification.getId();
+                });
+                // Update localNotification with new data using update method of Notification
+                notification.update(notificationInServer);
+            });
+
             finalNotifications = localNotifications;
         } else {
             finalNotifications = notifications;
@@ -272,7 +333,6 @@ class AppWrapper extends Component {
             finalNotifications.notifications = finalNotifications.notifications.filter(notification => {
                 return !notification.isExpired() && !notification.isSeen() && notification.getActive();
             });
-
         }
 
         // Update localStorage with finalNotifications
@@ -329,7 +389,11 @@ class AppWrapper extends Component {
                 notifications: notifications
             });
         } catch (e) {
-            console.error(e);
+            if (e instanceof APIError) {
+                if (e.getStatus() === 401) {
+                    this.logout();
+                }
+            }
             return;
         }
 
@@ -358,8 +422,11 @@ class AppWrapper extends Component {
                 token:  this.state.token
             });
         } catch (e) {
-            // TODO: Handle error
-            console.error(e);
+            if (e instanceof APIError) {
+                if (e.getStatus() === 401) {
+                    this.logout();
+                }
+            }
             return;
         }
 
@@ -411,6 +478,7 @@ class AppWrapper extends Component {
             hasToLogIn: this.hasToLogIn.bind(this),
             logout: this.logout.bind(this),
             login: this.login.bind(this),
+            validateSession: this.validateSession.bind(this),
         }}>
             <AppRouter config={this.config} />
         </AppContext.Provider>
