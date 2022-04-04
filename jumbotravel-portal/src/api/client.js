@@ -82,11 +82,12 @@ class RestClient {
         });
 
         if (response.status !== 200) {
-            throw new APIError(
-                "error on authorization",
-                response.status,
-                response.statusText
-            )
+            // Try to parse error
+            let errorData = await response.json();
+            if (!errorData) {
+                return false, "error on authorize";
+            }
+            return false, errorData["error"];
         }
 
         // Get response
@@ -101,7 +102,7 @@ class RestClient {
             agentId: data.id
         }));
 
-        return true;
+        return true, null;
     }
 
     // ================

@@ -8,7 +8,7 @@ class Notifications extends Component {
 
     render() {
         return (
-            <div>
+            <div className='z-10'>
                 {/* Desktop */}
                 <div className="hidden absolute sm:flex flex-col space-y-4 items-center w-full max-w-xs top-20 right-5 space-x">
                     {

@@ -22,8 +22,13 @@ class Module extends Component {
                 </Helmet>
                 <Sidebar app={this.props.app} config={this.props.config} current={1} />
                 <Notifications app={this.props.app} config={this.props.config} />
-                <div className="w-full h-full">
+                <div className="relative w-full h-full | flex flex-col justify-start items-start">
+                    {/* NavBar */}
                     <NavBar app={this.props.app} config={this.props.config} />
+                    {/* Content */}
+                    <div className="flex flex-col flex-1 h-full p-2">
+                        Hello World!
+                    </div>
                 </div>
             </div>
         );

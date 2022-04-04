@@ -4,24 +4,44 @@ import { Navigate } from 'react-router-dom';
 
 import LogoSVG from '../../utils/logo';
 
+function classNames(...classes) {
+    return classes.filter(Boolean).join(' ')
+}
+
 class LoginForm extends React.Component {
 
     constructor(props) {
         super(props);
 
+        this.state = {
+            error: true,
+            errorMessage: ''
+        }
+
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
-    handleSubmit = (event) => {
+    handleSubmit = async (event) => {
         event.preventDefault();
 
+        this.setState({
+            error: false,
+            errorMessage: ''
+        });
+
         // Login
-        let ok = this.props.app.login({
+        let ok, error = await this.props.app.login({
             identifier: this.props.username,
             password: this.props.password
         })
+        
+        if (!ok) {
+            this.setState({
+                error: true,
+                errorMessage: error
+            });
+        }
 
-        // TODO: If not OK show error
         return;
     }
 
@@ -40,8 +60,29 @@ class LoginForm extends React.Component {
                             <input type='text' placeholder=""
                                 value={this.props.username}
                                 onChange={ev => this.props.setUsername(ev.target.value)}
-                                className="px-3 py-2 | w-full | border-2 border-jt-primary | rounded-md text-gray-700 focus:outline-none" />
+                                className={classNames(
+                                    this.state.error && this.state.errorMessage === "identifier not found" ? 'border-red-500' : 'border-jt-primary',
+                                    "px-3 py-2 | w-full | border-2 | rounded-md text-gray-700 focus:outline-none"
+                                )}
+                                required
+                            />
                         </div>
+                        {
+                            this.state.error && this.state.errorMessage === "identifier not found" ?
+                                (
+                                    <div className='w-full h-8 | flex flex-row items-center justify-start'>
+                                        <svg className="w-6 h-6 mr-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                        <p className="text-sm text-red-500">
+                                            Wrong identifier
+                                        </p>
+                                    </div>
+                                ) :
+                                (
+                                    <div></div>
+                                )
+                        }
                     </div>
 
                     {/* Password */}
@@ -53,15 +94,36 @@ class LoginForm extends React.Component {
                             <input type='password' placeholder=""
                                 value={this.props.password}
                                 onChange={ev => this.props.setPassword(ev.target.value)}
-                                className="px-3 py-2 | w-full | border-2 border-jt-primary | rounded-md text-gray-700 focus:outline-none" />
+                                className={classNames(
+                                    this.state.error && this.state.errorMessage === "Unauthorized" ? 'border-red-500' : 'border-jt-primary',
+                                    "px-3 py-2 | w-full | border-2 | rounded-md text-gray-700 focus:outline-none"
+                                )}
+                                required
+                            />
                         </div>
+                        {
+                            this.state.error && this.state.errorMessage === "Unauthorized" ?
+                            (
+                                <div className='w-full h-8 | flex flex-row items-center justify-start'>
+                                    <svg className="w-6 h-6 mr-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                    <p className="text-sm text-red-500">
+                                        Wrong password
+                                    </p>
+                                </div>
+                            ) :
+                            (
+                                <div></div>
+                            )
+                        }
                     </div>
 
                     {/* Login */}
                     <button type="submit"
                         className="py-2 px-2 mt-10 | w-full | rounded-md text-xl font-bold bg-jt-primary text-gray-100 focus:outline-none">Login</button>
                 </div>
-            </form>
+            </form >
         )
     }
 

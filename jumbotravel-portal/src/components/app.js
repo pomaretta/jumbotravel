@@ -149,19 +149,15 @@ class AppWrapper extends Component {
         })
     }
 
-    login({ identifier, password }) {
-
-        // TODO: Handle error
-        let ok = this.api.authorize({
+    async login({ identifier, password }) {
+        let ok, error = await this.api.authorize({
             identifier: identifier,
             password: password
         })
-
         if (!ok) {
-            return false;
+            return false, error;
         }
-
-        return true;
+        return true, null;
     }
 
     loginWithToken() {
