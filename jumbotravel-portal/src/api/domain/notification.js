@@ -18,6 +18,7 @@ class Notification {
         seen,
         active,
         signature,
+        local = false,
     }) {
         this.notification_id = notification_id;
         this.scope = scope;
@@ -39,6 +40,7 @@ class Notification {
         this.seen = seen;
         this.active = active;
         this.signature = signature;
+        this.local = local;
     }
 
     getId() {
@@ -81,6 +83,10 @@ class Notification {
         this.seen = seen;
     }
 
+    isLocal() {
+        return this.local;
+    }
+
     getNotification() {
         return <DefaultNotification {...this} />;
     }
@@ -88,7 +94,7 @@ class Notification {
     getPopup() {
         return <PopupNotification {...this} />;
     }
-
+    
     update(notification) {
 
         // Title has changed

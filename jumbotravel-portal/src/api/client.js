@@ -6,6 +6,7 @@ import Agent from './domain/agent_data';
 
 // Models
 import NotificationCollection from '../api/collection/notification';
+import FlightsCollection from './collection/flights';
 
 function requestWithEnvironment({ schema, hostname, path }) {
     return `${schema}://${hostname}${path}`;
@@ -46,11 +47,11 @@ class RestClient {
                 token: token,
                 path: '/validate'
             }), {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token.getToken()}`
-                }
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token.getToken()}`
             }
+        }
         )
         if (response.status !== 200) {
             throw new APIError(
@@ -213,6 +214,44 @@ class RestClient {
 
         // Return data
         return new Agent(data);
+    }
+
+    async getAgentFlights({ token }) {
+
+        // Make request
+        const response = await fetch(
+            requestWithParameters({
+                url: getAgentPath({
+                    schema: this.schema,
+                    hostname: this.hostname,
+                    token: token,
+                    path: '/flights'
+                })
+            }), {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token.getToken()}`
+            }
+        });
+
+        if (response.status !== 200) {
+            throw new APIError(
+                "error on getNotifications",
+                response.status,
+                response.statusText
+            )
+        }
+
+        // Get response
+        const data = await response.json();
+
+        let isNullResponse = data["result"] === null;
+        if (isNullResponse) {
+            return new FlightsCollection();
+        }
+
+        // Return data
+        return FlightsCollection.parse(data["result"]);
     }
 
 }

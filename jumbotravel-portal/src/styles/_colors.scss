@@ -1,6 +1,7 @@
 // COLORS
 $primary: rgb(0, 182, 215);
 $primary-2: rgb(29, 255, 70);
+$primary-3: #34C700;
 $secondary: #03DAC6;
 $secondary-2: #018786;
 
@@ -32,6 +33,10 @@ $on-error: #FFFFFF;
 
 .bg-jt-primary2 {
     background-color: $primary-2;
+}
+
+.bg-jt-primary3 {
+    background-color: $primary-3;
 }
 
 .border-jt-primary {

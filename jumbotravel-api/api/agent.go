@@ -18,6 +18,12 @@ func (api *API) initAgent() {
 			notificationsGroup.POST("", agent.ReadNotifications(api.application))
 		}
 
+		// Flights
+		flightsGroup := agentGroup.Group("/flights")
+		{
+			flightsGroup.GET("", agent.Flights(api.application))
+		}
+
 	}
 
 }

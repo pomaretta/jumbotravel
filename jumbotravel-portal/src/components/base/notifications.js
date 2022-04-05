@@ -26,7 +26,21 @@ class Notifications extends Component {
                                 )
                             })
                             :
-                            ''
+                            this.context.localNotifications.notifications.length > 0 ?
+                                this.context.localNotifications.getPopup().map((notification, index) => {
+                                    return (
+                                        <div
+                                            key={index}
+                                            className="flex flex-row items-center justify-center w-full"
+                                        >
+                                            {
+                                                notification.getPopup()
+                                            }
+                                        </div>
+                                    )
+                                })
+                                :
+                                ''
                     }
                 </div>
                 {/* Mobile */}
@@ -34,6 +48,20 @@ class Notifications extends Component {
                     {
                         this.context.hasNotifications ?
                             this.context.notifications.getPopup().map((notification, index) => {
+                                return (
+                                    <div
+                                        key={index}
+                                        className="flex flex-row items-center justify-center w-full"
+                                    >
+                                        {
+                                            notification.getPopup()
+                                        }
+                                    </div>
+                                )
+                            })
+                            :
+                        this.context.localNotifications.notifications.length > 0 ?
+                            this.context.localNotifications.getPopup().map((notification, index) => {
                                 return (
                                     <div
                                         key={index}

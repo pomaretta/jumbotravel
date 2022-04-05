@@ -44,4 +44,7 @@ type MySQLFetcher interface {
 	// Agent
 	FetchAgentNotifications(agentId int, seen, active, expired, popup string) ([]entity.Notification, error)
 	UpdateAgentNotifications(notificationIds []int) (int64, error)
+
+	// Agent Flights
+	FetchAgentFlights(agentId int, routeId, flightId, airplaneId int, status string, departureTime, arrivalTime time.Time) (s []dto.AgentFlight, err error)
 }

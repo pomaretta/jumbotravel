@@ -7,6 +7,7 @@ import { defineLordIconElement } from 'lord-icon-element';
 // ==================
 import RestClient from "../api/client";
 import JWTToken from "./utils/token";
+import NotificationModel from "../api/domain/notification";
 
 // ==================
 // Routes
@@ -57,8 +58,14 @@ class AppWrapper extends Component {
             // =====================
             notificationsIsOpen: false,
             notifications: null,
+            localNotifications: new NotificationCollection([]),
             hasNotifications: false,
             newNotifications: false,
+
+            // =====================
+            // Functionality
+            // =====================
+            agentFlights: null,
 
         }
     }
@@ -399,6 +406,37 @@ class AppWrapper extends Component {
         return;
     }
 
+    pushLocalNotification({
+        title,
+        message,
+        link,
+        extra,
+        type
+    }) {
+
+        let notification = new NotificationModel({
+            notification_id: 0,
+            scope: "AGENT",
+            resource_id: "0",
+            title: title,
+            message: message,
+            link: link,
+            extra: extra,
+            type: type,
+            popup: true,
+            active: true,
+            seen: false,
+            created_at: new Date(),
+            expires_at: new Date(),
+            local: true
+        });
+
+        this.state.localNotifications.addLocal(notification);
+        this.setState({
+            localNotifications: this.state.localNotifications
+        });
+    }
+
     // END NOTIFICATIONS
     // ==================
 
@@ -434,6 +472,31 @@ class AppWrapper extends Component {
     // END AGENT
     // ==================
 
+    // ==================
+    // FUNCTIONALITIES
+    // ==================
+
+    async getAgentFlights() {
+
+        let flights = null;
+        try {
+            flights = await this.api.getAgentFlights({
+                token:  this.state.token
+            });
+        } catch (e) {
+            if (e instanceof APIError) {
+                if (e.getStatus() === 401) {
+                    this.logout();
+                }
+            }
+            return;
+        }
+
+        this.setState({
+            agentFlights: flights
+        })
+    }
+
     render() {
         if (this.hasToLogIn()) {
             return <LoginModule app={this} config={this.props.config} />
@@ -459,13 +522,15 @@ class AppWrapper extends Component {
             // =====================
             notificationsIsOpen: this.state.notificationsIsOpen,
             notifications: this.state.notifications,
+            localNotifications: this.state.localNotifications,
             hasNotifications: this.state.hasNotifications,
             newNotifications: this.state.newNotifications,
             getNotifications: this.getNotifications.bind(this),
             isNotificationsOpen: this.isNotificationsOpen.bind(this),
             setNotificationsOpen: this.setNotificationsOpen.bind(this),
             markNotificationsRead: this.markNotificationsRead.bind(this),
-            
+            pushLocalNotification: this.pushLocalNotification.bind(this),
+
             // =====================
             // Auth
             // =====================
@@ -475,6 +540,12 @@ class AppWrapper extends Component {
             logout: this.logout.bind(this),
             login: this.login.bind(this),
             validateSession: this.validateSession.bind(this),
+
+            // =====================
+            // Functionalities
+            // =====================
+            getAgentFlights: this.getAgentFlights.bind(this),
+            agentFlights: this.state.agentFlights,
         }}>
             <AppRouter config={this.config} />
         </AppContext.Provider>

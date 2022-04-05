@@ -92,10 +92,12 @@ class PopupNotification extends Component {
                     show: false
                 });
                 clearInterval(this.timer);
-
                 // Remove the notification from the queue
-                this.context.markNotificationsRead(this.props.notification_id);
-
+                if (!this.props.local) {
+                    this.context.markNotificationsRead(this.props.notification_id);
+                } else {
+                    this.context.localNotifications.notifications.splice(this.context.localNotifications.notifications.indexOf(this.props.notification_id), 1);
+                }
             }
         }, 1000);
 

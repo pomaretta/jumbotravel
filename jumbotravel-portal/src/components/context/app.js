@@ -20,12 +20,14 @@ const AppContext = React.createContext({
     // =====================
     notificationsIsOpen: false,
     notifications: [],
+    localNotifications: null,
     hasNotifications: false,
     newNotifications: false,
     getNotifications: () => {},
     isNotificationsOpen: () => {},
     setNotificationsOpen: () => {},
     markNotificationsRead: () => {},
+    pushLocalNotification: () => {},
 
     // =====================
     // Auth
@@ -36,6 +38,12 @@ const AppContext = React.createContext({
     logout: () => {},
     login: () => {},
     validateSession: () => {},
+
+    // =====================
+    // Functionality
+    // =====================
+    agentFlights: null,
+    getAgentFlights: () => {},
 
 });
 

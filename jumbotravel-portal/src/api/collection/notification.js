@@ -8,6 +8,10 @@ class NotificationCollection {
         this.notifications = notifications;
     }
 
+    addLocal(notification) {
+        this.notifications.push(notification);
+    }
+
     getAll() {
         return this.notifications;
     }
