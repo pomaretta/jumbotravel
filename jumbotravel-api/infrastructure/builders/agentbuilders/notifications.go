@@ -198,11 +198,35 @@ func (qb *NotificationsQueryBuilder) BuildQuery() (string, []interface{}, error)
 	}
 	args = append(args, agentArgs...)
 
-	flightClauses, flightArgs, err := qb.buildFlightWhereClause()
-	if err != nil {
-		return "", nil, err
-	}
-	args = append(args, flightArgs...)
+	// flightClauses, flightArgs, err := qb.buildFlightWhereClause()
+	// if err != nil {
+	// 	return "", nil, err
+	// }
+	// args = append(args, flightArgs...)
+
+	// query := fmt.Sprintf(`
+	// with
+	// 	global_notifications as (
+	// 		SELECT * FROM notifications n
+	// 		%s
+	// 	),
+	// 	agent_notifications as (
+	// 		SELECT * FROM notifications n
+	// 		%s
+	// 	),
+	// 	flight_notifications as (
+	// 		SELECT n.* FROM notifications n
+	// 		LEFT JOIN flight_agents fa
+	// 			ON fa.flight_id = n.resource_id
+	// 		%s
+	// 	)
+	// SELECT * FROM global_notifications
+	// UNION ALL
+	// SELECT * FROM agent_notifications
+	// UNION ALL
+	// SELECT * FROM flight_notifications
+	// %s
+	// `, globalClauses, agentClauses, flightClauses, orderClause)
 
 	query := fmt.Sprintf(`
 	with
@@ -213,20 +237,12 @@ func (qb *NotificationsQueryBuilder) BuildQuery() (string, []interface{}, error)
 		agent_notifications as (
 			SELECT * FROM notifications n 
 			%s
-		),
-		flight_notifications as (
-			SELECT n.* FROM notifications n
-			LEFT JOIN flight_agents fa
-				ON fa.flight_id = n.resource_id
-			%s
 		)
 	SELECT * FROM global_notifications
 	UNION ALL
 	SELECT * FROM agent_notifications
-	UNION ALL
-	SELECT * FROM flight_notifications
 	%s
-	`, globalClauses, agentClauses, flightClauses, orderClause)
+	`, globalClauses, agentClauses, orderClause)
 
 	return query, args, nil
 }

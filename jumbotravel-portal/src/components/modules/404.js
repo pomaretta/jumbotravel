@@ -22,7 +22,7 @@ class NotFound extends Component {
                         Return to the 
                         <a
                             href="/"
-                            className="bg-brand-green text-gray-700 underline font-bold pl-2">
+                            className="text-brand-blue underline font-bold pl-2">
                             homepage
                         </a>.
                     </p>
