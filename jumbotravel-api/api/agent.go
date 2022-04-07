@@ -22,6 +22,12 @@ func (api *API) initAgent() {
 		flightsGroup := agentGroup.Group("/flights")
 		{
 			flightsGroup.GET("", agent.Flights(api.application))
+			// Get flight data
+			flightDataGroup := flightsGroup.Group("/:flightid")
+			{
+				flightDataGroup.GET("/details", agent.FlightDetails(api.application))
+				flightDataGroup.GET("/operations", agent.FlightOperations(api.application))
+			}
 		}
 
 	}

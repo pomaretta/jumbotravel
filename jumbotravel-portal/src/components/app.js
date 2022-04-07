@@ -66,6 +66,7 @@ class AppWrapper extends Component {
             // Functionality
             // =====================
             agentFlights: null,
+            agentFlightDetails: null,
 
         }
     }
@@ -497,11 +498,63 @@ class AppWrapper extends Component {
         })
     }
 
+    async getAgentFlightDetails(flightId) {
+        this.api.getAgentFlightDetails({
+            token:  this.state.token,
+            flightId: flightId
+        }).then(response => {
+            this.setState({
+                agentFlightDetails: response
+            })
+        }).catch(error => {
+            if (error instanceof APIError) {
+                if (error.getStatus() === 401) {
+                    this.logout();
+                }
+            }
+        });
+    }
+
+    removeAgentFlightDetails() {
+        this.setState({
+            agentFlightDetails: null
+        })
+    }
+
+    async getAgentFlightOperations(flightId) {
+        this.api.getAgentFlightOperations({
+            token:  this.state.token,
+            flightId: flightId
+        }).then(response => {
+            this.setState({
+                agentFlightOperations: response
+            })
+        }).catch(error => {
+            if (error instanceof APIError) {
+                if (error.getStatus() === 401) {
+                    this.logout();
+                }
+            }
+        });
+    }
+
+    removeAgentFlightOperation() {
+        this.setState({
+            agentFlightOperations: null
+        })
+    }
+
     render() {
         if (this.hasToLogIn()) {
             return <LoginModule app={this} config={this.props.config} />
         }
         return <AppContext.Provider value={{
+            // ==================
+            // APP
+            // ==================
+            app: this,
+            config: this.config,
+
             // =====================
             // FEATURES 
             // =====================
@@ -545,7 +598,14 @@ class AppWrapper extends Component {
             // Functionalities
             // =====================
             getAgentFlights: this.getAgentFlights.bind(this),
+            getAgentFlightDetails: this.getAgentFlightDetails.bind(this),
+            removeAgentFlightDetails: this.removeAgentFlightDetails.bind(this),
+            getAgentFlightOperations: this.getAgentFlightOperations.bind(this),
+            removeAgentFlightOperation: this.removeAgentFlightOperation.bind(this),
             agentFlights: this.state.agentFlights,
+            agentFlightDetails: this.state.agentFlightDetails,
+            agentFlightOperations: this.state.agentFlightOperations
+
         }}>
             <AppRouter config={this.config} />
         </AppContext.Provider>

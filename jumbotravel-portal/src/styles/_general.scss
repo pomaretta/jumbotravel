@@ -29,3 +29,9 @@ a {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
 }
+
+@media (min-width: 640px) {
+    .sm\:no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+}

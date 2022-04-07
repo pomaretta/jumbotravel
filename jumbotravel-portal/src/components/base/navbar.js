@@ -33,12 +33,12 @@ class Navbar extends React.Component {
 
 	render() {
 		return (
-			<Disclosure as="nav" className="bg-white h-14 w-full z-10">
+			<Disclosure as="nav" className="fixed sm:relative bg-white h-14 w-full z-10">
 				{({ open }) => (
 					<>
 						<div className="w-full px-2 sm:px-3 lg:px-5 border-b">
 							<div className="relative flex items-center justify-between h-14">
-								<div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
+								<div className="absolute inset-y-0 left-0 flex items-center justify-between w-full sm:hidden">
 									{/* Mobile menu button*/}
 									<Disclosure.Button className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-700 hover:bg-jt-primary focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
 										<span className="sr-only">Open main menu</span>
@@ -48,6 +48,14 @@ class Navbar extends React.Component {
 											<MenuIcon className="block h-6 w-6" aria-hidden="true" />
 										)}
 									</Disclosure.Button>
+									<lord-icon
+										trigger={this.context.newNotifications ? "loop" : ""}
+										src="/resources/notification-bell.json"
+										style={{
+											width: '25px',
+											height: '25px',
+										}}
+									/>
 								</div>
 								<div className="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
 									<div className="hidden sm:block">
@@ -161,7 +169,7 @@ class Navbar extends React.Component {
 										}
 									</span>
 									{/* Notification Bell */}
-									<div className="ml-2 rounded-md text-gray-400 hover:text-gray-700 hover:bg-jt-primary focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+									{/* <div className="ml-2 rounded-md text-gray-400 hover:text-gray-700 hover:bg-jt-primary focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
 										<lord-icon
 											trigger={this.context.newNotifications ? "loop" : ""}
 											src="/resources/notification-bell.json"
@@ -170,7 +178,7 @@ class Navbar extends React.Component {
 												height: '25px',
 											}}
 										/>
-									</div>
+									</div> */}
 								</div>
 
 								<div

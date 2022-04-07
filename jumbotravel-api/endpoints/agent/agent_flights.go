@@ -26,7 +26,7 @@ import (
 // @Param departuretime query string false "Departure time"
 // @Param arrivaltime query string false "Arrival time"
 //
-// @Success 200 {object} response.JSONResult{result=[]response.AgentFlight} "Get agent flights."
+// @Success 200 {object} response.JSONResult{result=[]dto.AgentFlight} "Get agent flights."
 // @Failure 400 {object} response.JSONError "Bad request"
 // @Failure 500 {object} response.JSONError "Internal server error"
 func Flights(application *application.Application) func(*gin.Context) {
@@ -89,6 +89,106 @@ func Flights(application *application.Application) func(*gin.Context) {
 		}
 
 		result, err := application.GetAgentFlights(parsedAgentId, parsedRouteId, parsedFlightId, parsedAirplaneId, status, parsedDepartureTime, parsedArrivalTime)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"result": result,
+		})
+	}
+}
+
+// FlightDetails
+//
+// @Router /agent/:id/flights/:flightid/details [get]
+// @Tags Agent
+// @Summary Get flights details.
+//
+// @Security Bearer
+// @Produce json
+//
+// @Param id path int true "Agent ID"
+// @Param flightid path int true "Flight ID"
+//
+// @Success 200 {object} response.JSONResult{result=[]dto.AgentFlight} "Get agent flights."
+// @Failure 400 {object} response.JSONError "Bad request"
+// @Failure 500 {object} response.JSONError "Internal server error"
+func FlightDetails(application *application.Application) func(*gin.Context) {
+	return func(c *gin.Context) {
+
+		agentId := c.Param("id")
+		parsedAgentId, err := strconv.Atoi(agentId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		flightId := c.Param("flightid")
+		parsedFlightId, err := strconv.Atoi(flightId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		result, err := application.GetAgentFlights(parsedAgentId, -1, parsedFlightId, -1, "", time.Time{}, time.Time{})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"result": result,
+		})
+	}
+}
+
+// FlightOperations
+//
+// @Router /agent/:id/flights/:flightid/operations [get]
+// @Tags Agent
+// @Summary Get flights operations.
+//
+// @Security Bearer
+// @Produce json
+//
+// @Param id path int true "Agent ID"
+// @Param flightid path int true "Flight ID"
+//
+// @Success 200 {object} response.JSONResult{result=[]entity.Notification} "Get flight operations."
+// @Failure 400 {object} response.JSONError "Bad request"
+// @Failure 500 {object} response.JSONError "Internal server error"
+func FlightOperations(application *application.Application) func(*gin.Context) {
+	return func(c *gin.Context) {
+
+		agentId := c.Param("id")
+		parsedAgentId, err := strconv.Atoi(agentId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		flightId := c.Param("flightid")
+		parsedFlightId, err := strconv.Atoi(flightId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		result, err := application.GetAgentFlightOperations(parsedAgentId, parsedFlightId)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),

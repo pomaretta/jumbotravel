@@ -53,9 +53,9 @@ class Content extends Component {
 
     render() {
         return (
-            <div className="relative | flex flex-col | w-full h-full | overflow-scroll | no-scrollbar">
+            <div className="relative | flex flex-col | w-full h-full | sm:overflow-scroll | sm:no-scrollbar | bg-gray-50">
                 {/* Top */}
-                <div className="w-full | flex flex-col items-center justify-center">
+                <div className="w-full | flex flex-col items-center justify-center | bg-gray-50 | pb-6">
                     <FlightsContent />
                     {/* <div className="bg-yellow-50 | w-full | p-2">
                         <button
@@ -134,7 +134,7 @@ class Module extends Component {
 
     render() {
         return (
-            <div className="w-screen h-screen min-h-screen flex flex-row flex-auto flex-shrink-0 antialiased bg-gray-50 text-gray-800">
+            <div className="w-screen h-screen flex flex-row flex-auto flex-shrink-0 antialiased bg-gray-50 text-gray-800">
                 <Helmet>
                     <title>Flights - JumboTravel</title>
                 </Helmet>

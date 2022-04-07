@@ -146,3 +146,63 @@ func (qb *FlightsQueryBuilder) BuildQuery() (string, []interface{}, error) {
 
 	return query, args, nil
 }
+
+type FlightOperationsQueryBuilder struct {
+	builders.MySQLQueryBuilder
+
+	agentId  int
+	flightId int
+}
+
+func (qb *FlightOperationsQueryBuilder) SetAgentId(agentId int) {
+	qb.agentId = agentId
+}
+
+func (qb *FlightOperationsQueryBuilder) SetFlightId(flightId int) {
+	qb.flightId = flightId
+}
+
+func (qb *FlightOperationsQueryBuilder) buildWhereClauses() (string, []interface{}, error) {
+
+	partialQuery := "where 1=1"
+	args := []interface{}{}
+
+	// Set SCOPE to FLIGHT
+	partialQuery = fmt.Sprintf("%s and n.scope = ?", partialQuery)
+	args = append(args, "FLIGHT")
+
+	// Agent ID is required
+	if qb.agentId <= 0 {
+		return "", nil, fmt.Errorf("agent id is required")
+	}
+	partialQuery = fmt.Sprintf("%s and fa.agentmapping_id = ?", partialQuery)
+	args = append(args, qb.agentId)
+
+	if qb.flightId <= 0 {
+		return "", nil, fmt.Errorf("flight id is required")
+	}
+	partialQuery = fmt.Sprintf("%s and fa.flight_id = ?", partialQuery)
+	args = append(args, qb.flightId)
+
+	return partialQuery, args, nil
+}
+
+func (qb *FlightOperationsQueryBuilder) BuildQuery() (string, []interface{}, error) {
+
+	whereClauses, args, err := qb.buildWhereClauses()
+	if err != nil {
+		return "", nil, err
+	}
+	orderClause := "order by created_at asc"
+
+	query := fmt.Sprintf(`
+	SELECT 
+		n.* 
+	FROM notifications n
+	LEFT JOIN flight_agents fa
+		ON fa.flight_id = n.resource_id
+	%s %s
+	`, whereClauses, orderClause)
+
+	return query, args, nil
+}

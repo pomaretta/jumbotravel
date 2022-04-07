@@ -2,6 +2,10 @@ import React from 'react';
 
 const AppContext = React.createContext({
 
+    // APP
+    app: null,
+    config: null,
+
     // FEATURES
     intervals: {},
     clearIntervals: () => {},
@@ -43,7 +47,13 @@ const AppContext = React.createContext({
     // Functionality
     // =====================
     agentFlights: null,
+    agentFlightDetails: null,
+    agentFlightOperations: null,
     getAgentFlights: () => {},
+    getAgentFlightDetails: () => {},
+    removeAgentFlightDetails: () => {},
+    getAgentFlightOperations: () => {},
+    removeAgentFlightOperation: () => {},
 
 });
 

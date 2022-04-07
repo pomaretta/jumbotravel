@@ -2,12 +2,11 @@ import React from "react";
 import {
     BrowserRouter as Router,
     Routes,
-    Route
+    Route,
 } from "react-router-dom"
 
-import AppModule from "./modules/app";
-import LoginModule from './modules/login/Module';
 import FlightsModule from './modules/flights/Module';
+import FlightIndividual from './modules/flights/Flight';
 import PlanesModule from './modules/planes/Module';
 import NotFound from './modules/404';
 
@@ -89,10 +88,23 @@ class AppRouter extends React.Component {
         return (
             <Router>
                 <Routes>
-                    <Route key='login' path='/login' element={<LoginModule app={this.props.app} config={this.props.config} />} />
+
+                    {/* General Routes */}
+                    {/* <Route key='login' path='/login' element={<LoginModule app={this.props.app} config={this.props.config} />} /> */}
+
                     <Route key='home' path='/' element={<FlightsModule app={this.props.app} config={this.props.config} />} />
+
+                    {/* Assistant */}
                     <Route key='flights' path='/flights' element={<FlightsModule app={this.props.app} config={this.props.config} />} />
+                    <Route
+                        key='flights_details'
+                        path="/flights/:id"
+                        element={<FlightIndividual />}
+                    />
+
                     <Route key='planes' path='/planes' element={<PlanesModule app={this.props.app} config={this.props.config} />} />
+
+                    {/* 404 Not Found */}
                     <Route key='404' path='*' element={<NotFound app={this.props.app} config={this.props.config} />} />
                 </Routes>
             </Router>

@@ -98,12 +98,20 @@ class Route extends React.Component {
                                         <div className="flex flex-col | w-full | justify-start items-start | space-y-2">
                                             {/* Warning SVG */}
                                             <p className="text-md | text-gray-700 flex flex-row | items-center justify-between | w-full">
-                                                <span className="font-bold">Departure:</span>
+                                                <span className="font-bold">Departure</span>
                                                 <span>{flight.departure_time}</span>
                                             </p>
                                             <p className="text-md | text-gray-700 flex flex-row | items-center justify-between | w-full">
-                                                <span className="font-bold">Arrival: </span>
+                                                <span className="font-bold">Arrival</span>
                                                 <span>{flight.arrival_time}</span>
+                                            </p>
+                                            <p className="text-md | text-gray-700 flex flex-row | items-center justify-between | w-full">
+                                                <span className="font-bold">Departure Airport</span>
+                                                <span>{flight.departure_commonname}</span>
+                                            </p>
+                                            <p className="text-md | text-gray-700 flex flex-row | items-center justify-between | w-full">
+                                                <span className="font-bold">Arrival Airport</span>
+                                                <span>{flight.arrival_commonname}</span>
                                             </p>
                                         </div>
                                     </div>

@@ -3,6 +3,7 @@ import APIError from './error';
 
 import JWTToken from '../components/utils/token';
 import Agent from './domain/agent_data';
+import Flight from './domain/agent_flight';
 
 // Models
 import NotificationCollection from '../api/collection/notification';
@@ -252,6 +253,84 @@ class RestClient {
 
         // Return data
         return FlightsCollection.parse(data["result"]);
+    }
+    
+    async getAgentFlightDetails({ token, flightId }) {
+
+        // Make request
+        const response = await fetch(
+            requestWithParameters({
+                url: getAgentPath({
+                    schema: this.schema,
+                    hostname: this.hostname,
+                    token: token,
+                    path: `/flights/${flightId}/details`
+                })
+            }), {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token.getToken()}`
+            }
+        });
+
+        if (response.status !== 200) {
+            throw new APIError(
+                "error on get flight details",
+                response.status,
+                response.statusText
+            )
+        }
+
+        // Get response
+        const data = await response.json();
+
+        // Check if data is null
+        if (data["result"] === null) {
+            return null;
+        }
+
+        // Get flight data (must be unique)
+        const flightData = data["result"][0];
+
+        // Return data
+        return new Flight(flightData);
+    }
+
+    async getAgentFlightOperations({ token, flightId }) {
+
+        // Make request
+        const response = await fetch(
+            requestWithParameters({
+                url: getAgentPath({
+                    schema: this.schema,
+                    hostname: this.hostname,
+                    token: token,
+                    path: `/flights/${flightId}/operations`
+                })
+            }), {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token.getToken()}`
+            }
+        });
+
+        if (response.status !== 200) {
+            throw new APIError(
+                "error on get flight operations",
+                response.status,
+                response.statusText
+            )
+        }
+
+        // Get response
+        const data = await response.json();
+
+        // Check if data is null
+        if (data["result"] === null) {
+            return new NotificationCollection([]);
+        }
+
+        return NotificationCollection.parse(data["result"]);
     }
 
 }

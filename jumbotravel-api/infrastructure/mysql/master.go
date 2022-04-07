@@ -1,8 +1,6 @@
 package mysql
 
 import (
-	"fmt"
-
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/entity"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/infrastructure/builders/masterbuilders"
 )
@@ -72,9 +70,6 @@ func (db *MySQL) FetchMasterProducts(productId, productCode int) (s []entity.Pro
 	qb := &masterbuilders.MasterProductQueryBuilder{}
 	qb.SetProductID(productId)
 	qb.SetProductCode(productCode)
-
-	q, _, _ := qb.BuildQuery()
-	fmt.Println(q)
 
 	ent, err := db.Fetch(&entity.Product{}, qb)
 	if err != nil {

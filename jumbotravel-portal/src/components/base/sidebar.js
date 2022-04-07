@@ -129,11 +129,21 @@ class Sidebar extends Component {
                                     <div>
                                         <button 
                                             onClick={() => {
+                                                if (this.context.notifications.notifications.length == 0) {
+                                                    return false
+                                                }
                                                 this.context.markNotificationsRead(
                                                     this.context.notifications.notifications.map(notification => {
                                                         return notification.getId()
                                                     })
-                                                )
+                                                );
+                                                this.context.pushLocalNotification({
+                                                    title: 'Successfully marked as read',
+                                                    message: null,
+                                                    link: null,
+                                                    extra: null,
+                                                    type: 'SUCCESS'
+                                                });
                                             }}
                                             className="group bg-jt-primary px-2 w-auto items-center text-white rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-red-500 hover:text-white inline-flex h-8  justify-center transition-all duration-150" data-dismiss-target="#toast-success" aria-label="Close"
                                         >

@@ -59,3 +59,21 @@ func (db *MySQL) FetchAgentFlights(agentId int, routeId, flightId, airplaneId in
 
 	return
 }
+
+func (db *MySQL) FetchAgentFlightOperations(agentId, flightId int) (s []entity.Notification, err error) {
+
+	qb := &agentbuilders.FlightOperationsQueryBuilder{}
+	qb.SetAgentId(agentId)
+	qb.SetFlightId(flightId)
+
+	ent, err := db.Fetch(&entity.Notification{}, qb)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, e := range ent {
+		s = append(s, e.(entity.Notification))
+	}
+
+	return
+}
