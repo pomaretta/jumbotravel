@@ -59,3 +59,27 @@ func (v *AgentFlight) New() {
 func (v *AgentFlight) Val() interface{} {
 	return *v
 }
+
+type FlightAgent struct {
+	AgentID *int    `json:"agent_id"`
+	Name    *string `json:"name"`
+	Surname *string `json:"surname"`
+	Email   *string `json:"email"`
+} // @name FlightAgent
+
+func (v *FlightAgent) GetDestFields() []interface{} {
+	return []interface{}{
+		&v.AgentID,
+		&v.Name,
+		&v.Surname,
+		&v.Email,
+	}
+}
+
+func (v *FlightAgent) New() {
+	*v = FlightAgent{}
+}
+
+func (v *FlightAgent) Val() interface{} {
+	return *v
+}

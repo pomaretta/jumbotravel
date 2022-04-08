@@ -206,3 +206,92 @@ func (qb *FlightOperationsQueryBuilder) BuildQuery() (string, []interface{}, err
 
 	return query, args, nil
 }
+
+type FlightAgentsQueryBuilder struct {
+	builders.MySQLQueryBuilder
+
+	agentId  int
+	flightId int
+}
+
+func (qb *FlightAgentsQueryBuilder) SetAgentId(agentId int) {
+	qb.agentId = agentId
+}
+
+func (qb *FlightAgentsQueryBuilder) SetFlightId(flightId int) {
+	qb.flightId = flightId
+}
+
+func (qb *FlightAgentsQueryBuilder) buildWithClauses() (string, []interface{}, error) {
+
+	partialQuery := "where 1=1"
+	args := []interface{}{}
+
+	// Agent ID is required
+	if qb.agentId <= 0 {
+		return "", nil, fmt.Errorf("agent id is required")
+	}
+	partialQuery = fmt.Sprintf("%s and fa2.agentmapping_id = ?", partialQuery)
+	args = append(args, qb.agentId)
+
+	return partialQuery, args, nil
+}
+
+func (qb *FlightAgentsQueryBuilder) buildWhereClauses() (string, []interface{}, error) {
+
+	partialQuery := "where 1=1"
+	args := []interface{}{}
+
+	// Agent ID is required
+	if qb.flightId <= 0 {
+		return "", nil, fmt.Errorf("flight id is required")
+	}
+	partialQuery = fmt.Sprintf("%s and fa.flight_id = ?", partialQuery)
+	args = append(args, qb.flightId)
+
+	return partialQuery, args, nil
+}
+
+func (qb *FlightAgentsQueryBuilder) BuildQuery() (string, []interface{}, error) {
+
+	var args []interface{}
+
+	withClauses, withArgs, err := qb.buildWithClauses()
+	if err != nil {
+		return "", nil, err
+	}
+	args = append(args, withArgs...)
+
+	whereClauses, whereArgs, err := qb.buildWhereClauses()
+	if err != nil {
+		return "", nil, err
+	}
+	args = append(args, whereArgs...)
+
+	orderClause := "order by email desc"
+
+	query := fmt.Sprintf(`
+		with agent_flights as (
+			SELECT
+				f2.flight_id
+			FROM flights f2 
+			LEFT JOIN flight_agents fa2 
+				ON f2.flight_id = fa2.flight_id 
+			%s
+		)
+		SELECT 
+			fa.agentmapping_id as agent_id,
+			ma.name,
+			ma.surname,
+			ma.email
+		FROM agent_flights f
+		LEFT JOIN flight_agents fa
+			ON fa.flight_id = f.flight_id
+		LEFT JOIN master_agents ma 
+			ON ma.agent_id = fa.agent_id
+		%s
+		%s
+	`, withClauses, whereClauses, orderClause)
+
+	return query, args, nil
+}

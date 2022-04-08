@@ -77,3 +77,39 @@ func (db *MySQL) FetchAgentFlightOperations(agentId, flightId int) (s []entity.N
 
 	return
 }
+
+func (db *MySQL) FetchAgentFlightAgents(agentId, flightId int) (s []dto.FlightAgent, err error) {
+
+	qb := &agentbuilders.FlightAgentsQueryBuilder{}
+	qb.SetAgentId(agentId)
+	qb.SetFlightId(flightId)
+
+	ent, err := db.Fetch(&dto.FlightAgent{}, qb)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, e := range ent {
+		s = append(s, e.(dto.FlightAgent))
+	}
+
+	return
+}
+
+func (db *MySQL) FetchAgentFlightProducts(agentId, flightId int) (s []dto.FlightProduct, err error) {
+
+	qb := &agentbuilders.FlightProductsQueryBuilder{}
+	qb.SetAgentId(agentId)
+	qb.SetFlightId(flightId)
+
+	ent, err := db.Fetch(&dto.FlightProduct{}, qb)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, e := range ent {
+		s = append(s, e.(dto.FlightProduct))
+	}
+
+	return
+}

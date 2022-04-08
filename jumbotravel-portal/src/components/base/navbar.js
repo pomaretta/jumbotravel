@@ -33,7 +33,7 @@ class Navbar extends React.Component {
 
 	render() {
 		return (
-			<Disclosure as="nav" className="fixed sm:relative bg-white h-14 w-full z-10">
+			<Disclosure as="nav" className="sticky sm:relative bg-white h-14 w-full z-10">
 				{({ open }) => (
 					<>
 						<div className="w-full px-2 sm:px-3 lg:px-5 border-b">

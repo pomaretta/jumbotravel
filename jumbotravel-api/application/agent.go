@@ -22,3 +22,11 @@ func (app *Application) GetAgentFlights(agentId int, routeId, flightId, airplane
 func (app *Application) GetAgentFlightOperations(agentId, flightId int) ([]entity.Notification, error) {
 	return app.MySQLFetcher.FetchAgentFlightOperations(agentId, flightId)
 }
+
+func (app *Application) GetAgentFlightAgents(agentId, flightId int) ([]dto.FlightAgent, error) {
+	return app.MySQLFetcher.FetchAgentFlightAgents(agentId, flightId)
+}
+
+func (app *Application) GetAgentFlightProducts(agentId, flightId int) ([]dto.FlightProduct, error) {
+	return app.MySQLFetcher.FetchAgentFlightProducts(agentId, flightId)
+}

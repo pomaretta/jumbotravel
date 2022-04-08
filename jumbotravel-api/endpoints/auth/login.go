@@ -74,7 +74,7 @@ func Login(application *application.Application) func(*gin.Context) {
 		}
 
 		// TODO: Check if the agent has an active token
-		tokens, err := application.GetAuthToken(*agent.AgentId, "", "1", "2", true)
+		tokens, err := application.GetAuthToken(*agent.AgentId, "", "1", "1", true)
 		if err == nil && len(tokens) > 0 {
 
 			currentToken := *tokens[0].Token

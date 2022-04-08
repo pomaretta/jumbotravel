@@ -19,7 +19,7 @@ import (
 
 var (
 	environment = "DEV"
-	version     = "0.2"
+	version     = "0.3"
 )
 
 func establishDatabaseConnection(config *config.DBConfig) *mysql.MySQL {

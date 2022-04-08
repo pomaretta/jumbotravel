@@ -8,6 +8,8 @@ import Flight from './domain/agent_flight';
 // Models
 import NotificationCollection from '../api/collection/notification';
 import FlightsCollection from './collection/flights';
+import FlightAgentsCollection from './collection/flight_agents';
+import FlightProductsCollection from './collection/flight_products';
 
 function requestWithEnvironment({ schema, hostname, path }) {
     return `${schema}://${hostname}${path}`;
@@ -254,7 +256,7 @@ class RestClient {
         // Return data
         return FlightsCollection.parse(data["result"]);
     }
-    
+
     async getAgentFlightDetails({ token, flightId }) {
 
         // Make request
@@ -331,6 +333,80 @@ class RestClient {
         }
 
         return NotificationCollection.parse(data["result"]);
+    }
+
+    async getAgentFlightAgents({ token, flightId }) {
+
+        // Make request
+        const response = await fetch(
+            requestWithParameters({
+                url: getAgentPath({
+                    schema: this.schema,
+                    hostname: this.hostname,
+                    token: token,
+                    path: `/flights/${flightId}/agents`
+                })
+            }), {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token.getToken()}`
+            }
+        });
+
+        if (response.status !== 200) {
+            throw new APIError(
+                "error on get flight agents",
+                response.status,
+                response.statusText
+            )
+        }
+
+        // Get response
+        const data = await response.json();
+
+        // Check if data is null
+        if (data["result"] === null) {
+            return new FlightAgentsCollection([]);
+        }
+
+        return FlightAgentsCollection.parse(data["result"]);
+    }
+
+    async getAgentFlightProducts({ token, flightId }) {
+
+        // Make request
+        const response = await fetch(
+            requestWithParameters({
+                url: getAgentPath({
+                    schema: this.schema,
+                    hostname: this.hostname,
+                    token: token,
+                    path: `/flights/${flightId}/products`
+                })
+            }), {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token.getToken()}`
+            }
+        });
+
+        if (response.status !== 200) {
+            throw new APIError(
+                "error on get flight products",
+                response.status,
+                response.statusText
+            )
+        }
+
+        // Get response
+        const data = await response.json();
+
+        // Check if data is null
+        if (data["result"] === null) {
+            return new FlightProductsCollection([]);
+        }
+
+        return FlightProductsCollection.parse(data["result"]);
     }
 
 }

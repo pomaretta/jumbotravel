@@ -67,6 +67,9 @@ class AppWrapper extends Component {
             // =====================
             agentFlights: null,
             agentFlightDetails: null,
+            agentFlightOperations: null,
+            agentFlightAgents: null,
+            agentFlightProducts: null,
 
         }
     }
@@ -503,6 +506,12 @@ class AppWrapper extends Component {
             token:  this.state.token,
             flightId: flightId
         }).then(response => {
+            if (response === null) {
+                this.setState({
+                    agentFlightDetails: new APIError("", 404, "")
+                })
+                return;
+            }
             this.setState({
                 agentFlightDetails: response
             })
@@ -510,6 +519,8 @@ class AppWrapper extends Component {
             if (error instanceof APIError) {
                 if (error.getStatus() === 401) {
                     this.logout();
+                } else {
+                    throw error;
                 }
             }
         });
@@ -542,6 +553,40 @@ class AppWrapper extends Component {
         this.setState({
             agentFlightOperations: null
         })
+    }
+
+    async getAgentFlightAgents(flightId) {
+        this.api.getAgentFlightAgents({
+            token:  this.state.token,
+            flightId: flightId
+        }).then(response => {
+            this.setState({
+                agentFlightAgents: response
+            })
+        }).catch(error => {
+            if (error instanceof APIError) {
+                if (error.getStatus() === 401) {
+                    this.logout();
+                }
+            }
+        });
+    }
+
+    async getAgentFlightProducts(flightId) {
+        this.api.getAgentFlightProducts({
+            token:  this.state.token,
+            flightId: flightId
+        }).then(response => {
+            this.setState({
+                agentFlightProducts: response
+            })
+        }).catch(error => {
+            if (error instanceof APIError) {
+                if (error.getStatus() === 401) {
+                    this.logout();
+                }
+            }
+        });
     }
 
     render() {
@@ -602,10 +647,13 @@ class AppWrapper extends Component {
             removeAgentFlightDetails: this.removeAgentFlightDetails.bind(this),
             getAgentFlightOperations: this.getAgentFlightOperations.bind(this),
             removeAgentFlightOperation: this.removeAgentFlightOperation.bind(this),
+            getAgentFlightAgents: this.getAgentFlightAgents.bind(this),
+            getAgentFlightProducts: this.getAgentFlightProducts.bind(this),
             agentFlights: this.state.agentFlights,
             agentFlightDetails: this.state.agentFlightDetails,
-            agentFlightOperations: this.state.agentFlightOperations
-
+            agentFlightOperations: this.state.agentFlightOperations,
+            agentFlightAgents: this.state.agentFlightAgents,
+            agentFlightProducts: this.state.agentFlightProducts,
         }}>
             <AppRouter config={this.config} />
         </AppContext.Provider>
