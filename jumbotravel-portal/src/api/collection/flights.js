@@ -46,6 +46,33 @@ class FlightsCollection {
         return flightsByRoutes;
     }
 
+    getCurrent() {
+        // Get the now time in local time
+        let now = new Date();
+        // Get the current time in UTC
+        let utcNow = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
+
+        // Iterate over all flights and find the one that is currently active
+        for (let flight of this.flights) {
+            let departureTime = flight.departure_time;
+            let arrivalTime = flight.arrival_time;
+
+            // Check if the flight is currently active
+            if (departureTime <= utcNow && utcNow <= arrivalTime) {
+                // Return the flight
+                console.log(`Flight ${flight.flight_id} is currently active`);
+                return flight;
+            }
+        }
+
+        // If no flight is currently active, return the first flight if it exists
+        if (this.flights.length > 0) {
+            return this.flights[0];
+        } else {
+            return null;
+        }
+    }
+
     static parse(data) {
         return new FlightsCollection({
             flights: data.map(flight => new Flight(flight))

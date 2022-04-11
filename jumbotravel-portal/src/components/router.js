@@ -91,7 +91,6 @@ class AppRouter extends React.Component {
 
                     {/* General Routes */}
                     {/* <Route key='login' path='/login' element={<LoginModule app={this.props.app} config={this.props.config} />} /> */}
-
                     <Route key='home' path='/' element={<FlightsModule app={this.props.app} config={this.props.config} />} />
 
                     {/* Assistant */}

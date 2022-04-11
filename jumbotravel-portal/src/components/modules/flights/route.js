@@ -40,7 +40,7 @@ class Route extends React.Component {
                 <div
                     className={ClassNames(
                         this.state.isOpen ? "flex" : "hidden",
-                        "flex-col | items-start justify-start | w-full px-2 | space-y-3"
+                        "flex-col | items-start justify-start | w-full px-4 | space-y-3"
                     )}
                 >
                     {

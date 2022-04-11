@@ -196,11 +196,11 @@ function FlightProduct(props) {
                         <p className="text-xs mr-2 font-bold text-brand-blue">
                             Stock:
                         </p>
-                        <input
-                            type="number"
+                        <p
                             className="border border-black | px-2 py-1 | rounded-md | bg-white | text-xs | w-10 | text-center"
-                            defaultValue={props.product.stock}
-                        />
+                        >
+                            {props.product.stock}
+                        </p>
                         <p className="text-xs">
                             <span className="mr-2 font-bold text-brand-blue">Max:</span>
                             {
@@ -441,7 +441,7 @@ class FlightStock extends Component {
                         <div className="sm:absolute | w-full h-full | flex flex-col | items-start justify-start | sm:overflow-scroll | sm:no-scrollbar | sm:pb-16 | p-2 | space-y-4 sm:space-y-0">
                             {/* Flight Operations */}
                             {
-                                this.context.agentFlightProducts && this.context.agentFlightProducts.products.length > 0 ?
+                                this.context.agentFlightProducts && this.context.agentFlightProducts.products.length > 0 && (this.context.agentFlightDetails && this.context.agentFlightDetails.status !== "BUSY") ?
                                     this.context.agentFlightProducts.products.map((item, index) => {
                                         return (
                                             <FlightProduct key={index} product={item} editing={this.state.isEdit} toggleEdit={this.toggleEdit} />
@@ -457,7 +457,7 @@ class FlightStock extends Component {
                             <div className="flex flex-col w-full sm:w-auto | justify-center items-center | sm:flex-row | space-y-2 sm:space-y-0 sm:space-x-4">
                                 <button
                                     className={ClassName(
-                                        this.state.isEdit ? "hidden" : "block",
+                                        this.state.isEdit || !(this.context.agentFlightDetails && this.context.agentFlightDetails.status !== "BUSY") ? "hidden" : "block",
                                         "text-2xl w-full sm:text-xs px-4 py-2 | bg-jt-primary | rounded | shadow hover:shadow-md | font-bold | text-white"
                                     )}
                                     onClick={() => {

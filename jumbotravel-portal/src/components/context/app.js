@@ -51,7 +51,7 @@ const AppContext = React.createContext({
     agentFlightOperations: null,
     agentFlightAgents: null,
     agentFlightProducts: null,
-    getAgentFlights: () => {},
+    getCurrentFlight: () => {},
     getAgentFlightDetails: () => {},
     removeAgentFlightDetails: () => {},
     getAgentFlightOperations: () => {},
