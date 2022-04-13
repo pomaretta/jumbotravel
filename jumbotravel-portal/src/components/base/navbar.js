@@ -231,13 +231,13 @@ class Navbar extends React.Component {
 									Flights
 								</Link>
 								<Link
-									to={'/planes'}
+									to={'/bookings'}
 									className={classNames(
 										'bg-white text-gray-700',
 										'block px-3 py-2 rounded-md text-base font-medium mb-2 shadow hover:shadow-md'
 									)}
 								>
-									Planes
+									Bookings
 								</Link>
 								<a
 									className={classNames(

@@ -532,13 +532,13 @@ Content.contextType = Context;
 
 class Module extends Component {
 
-    constructor(props) {
-        super(props);
+    // constructor(props) {
+    //     super(props);
 
-        // this.state = {
-        //     interval: null
-        // };
-    }
+    //     // this.state = {
+    //     //     interval: null
+    //     // };
+    // }
 
     componentDidMount() {
         // Get details

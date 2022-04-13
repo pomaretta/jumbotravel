@@ -8,7 +8,7 @@ class Route extends React.Component {
         super(props);
 
         this.state = {
-            isOpen: this.props.index != null && this.props.index == 0 ? true : false
+            isOpen: this.props.index != null && this.props.index === 0 ? true : false
         }
 
     }

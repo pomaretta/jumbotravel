@@ -52,7 +52,7 @@ class AppWrapper extends Component {
             // =====================
             isLoggedIn: false,
             token: null,
-            
+
             // =====================
             // Notifications
             // =====================
@@ -63,13 +63,18 @@ class AppWrapper extends Component {
             newNotifications: false,
 
             // =====================
-            // Functionality
+            // Functionality (Flights)
             // =====================
             agentFlights: null,
             agentFlightDetails: null,
             agentFlightOperations: null,
             agentFlightAgents: null,
             agentFlightProducts: null,
+
+            // =====================
+            // Functionality (Bookings)
+            // =====================
+            agentBookingsStatus: null,
 
         }
     }
@@ -153,7 +158,7 @@ class AppWrapper extends Component {
             token: token.stringify(),
             expires: new Date(Date.now() + (1000 * 60 * 60 * 24 * 7))
         })
-        
+
         this.setState({
             isLoggedIn: true,
             token: token
@@ -203,7 +208,7 @@ class AppWrapper extends Component {
         })
     }
 
-    async validateSession({token}) {
+    async validateSession({ token }) {
 
         // Validate token
         if (!token || !token.isValid()) {
@@ -235,11 +240,11 @@ class AppWrapper extends Component {
     // ==================
 
     async getNotifications() {
-        
+
         let notifications = null;
         try {
             notifications = await this.api.getNotifications({
-                token:  this.state.token
+                token: this.state.token
             });
         } catch (e) {
             // TODO: Handle error
@@ -268,10 +273,10 @@ class AppWrapper extends Component {
             // =====================
 
             // 1. Get new notifications and add to finalNotifications
-            
+
             // Iterate over new notifications
             notifications.notifications.forEach(notification => {
-                
+
                 // Check if notification is already in localNotifications
                 let localNotification = localNotifications.notifications.find(notif => {
                     return notif.getId() === notification.getId();
@@ -457,7 +462,7 @@ class AppWrapper extends Component {
         let agent = null;
         try {
             agent = await this.api.getAgentData({
-                token:  this.state.token
+                token: this.state.token
             });
         } catch (e) {
             if (e instanceof APIError) {
@@ -477,7 +482,7 @@ class AppWrapper extends Component {
     // ==================
 
     // ==================
-    // FUNCTIONALITIES
+    // FUNCTIONALITIES (FLIGHTS)
     // ==================
 
     async getAgentFlights() {
@@ -485,7 +490,7 @@ class AppWrapper extends Component {
         let flights = null;
         try {
             flights = await this.api.getAgentFlights({
-                token:  this.state.token
+                token: this.state.token
             });
         } catch (e) {
             if (e instanceof APIError) {
@@ -503,7 +508,7 @@ class AppWrapper extends Component {
 
     async getAgentFlightDetails(flightId) {
         this.api.getAgentFlightDetails({
-            token:  this.state.token,
+            token: this.state.token,
             flightId: flightId
         }).then(response => {
             if (response === null) {
@@ -534,7 +539,7 @@ class AppWrapper extends Component {
 
     async getAgentFlightOperations(flightId) {
         this.api.getAgentFlightOperations({
-            token:  this.state.token,
+            token: this.state.token,
             flightId: flightId
         }).then(response => {
             this.setState({
@@ -557,7 +562,7 @@ class AppWrapper extends Component {
 
     async getAgentFlightAgents(flightId) {
         this.api.getAgentFlightAgents({
-            token:  this.state.token,
+            token: this.state.token,
             flightId: flightId
         }).then(response => {
             this.setState({
@@ -574,11 +579,34 @@ class AppWrapper extends Component {
 
     async getAgentFlightProducts(flightId) {
         this.api.getAgentFlightProducts({
-            token:  this.state.token,
+            token: this.state.token,
             flightId: flightId
         }).then(response => {
             this.setState({
                 agentFlightProducts: response
+            })
+        }).catch(error => {
+            if (error instanceof APIError) {
+                if (error.getStatus() === 401) {
+                    this.logout();
+                }
+            }
+        });
+    }
+
+    // END FUNCTIONALITIES (FLIGHTS)
+    // ==================
+
+    // ==================
+    // FUNCTIONALITIES (BOOKINGS)
+    // ==================
+
+    async getAgentBookingsStatus() {
+        this.api.getAgentBookingStatus({
+            token: this.state.token
+        }).then(response => {
+            this.setState({
+                agentBookingsStatus: response
             })
         }).catch(error => {
             if (error instanceof APIError) {
@@ -640,7 +668,7 @@ class AppWrapper extends Component {
             validateSession: this.validateSession.bind(this),
 
             // =====================
-            // Functionalities
+            // Functionalities (Flights)
             // =====================
             getAgentFlights: this.getAgentFlights.bind(this),
             getAgentFlightDetails: this.getAgentFlightDetails.bind(this),
@@ -654,6 +682,13 @@ class AppWrapper extends Component {
             agentFlightOperations: this.state.agentFlightOperations,
             agentFlightAgents: this.state.agentFlightAgents,
             agentFlightProducts: this.state.agentFlightProducts,
+
+            // =====================
+            // Functionalities (Bookings)
+            // =====================
+            agentBookingsStatus: this.state.agentBookingsStatus,
+            getAgentBookingsStatus: this.getAgentBookingsStatus.bind(this),
+
         }}>
             <AppRouter config={this.config} />
         </AppContext.Provider>

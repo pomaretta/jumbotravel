@@ -10,6 +10,7 @@ import NotificationCollection from '../api/collection/notification';
 import FlightsCollection from './collection/flights';
 import FlightAgentsCollection from './collection/flight_agents';
 import FlightProductsCollection from './collection/flight_products';
+import { BookingStatusCollection } from './collection/bookings';
 
 function requestWithEnvironment({ schema, hostname, path }) {
     return `${schema}://${hostname}${path}`;
@@ -407,6 +408,40 @@ class RestClient {
         }
 
         return FlightProductsCollection.parse(data["result"]);
+    }
+
+    async getAgentBookingStatus({ token }) {
+
+        const response = await fetch(
+            getAgentPath({
+                schema: this.schema,
+                hostname: this.hostname,
+                token: token,
+                path: `/bookings/status`
+            }), {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token.getToken()}`
+                }
+        });
+
+        if (response.status !== 200) {
+            throw new APIError(
+                "error on get booking status",
+                response.status,
+                response.statusText
+            )
+        }
+
+        // Get response
+        const data = await response.json();
+
+        // Check if data is null
+        if (data["result"] === null) {
+            return new BookingStatusCollection([]);
+        }
+
+        return BookingStatusCollection.parse(data["result"]);
     }
 
 }

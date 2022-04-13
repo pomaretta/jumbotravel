@@ -44,7 +44,7 @@ const AppContext = React.createContext({
     validateSession: () => {},
 
     // =====================
-    // Functionality
+    // Functionality (Flights)
     // =====================
     agentFlights: null,
     agentFlightDetails: null,
@@ -58,6 +58,12 @@ const AppContext = React.createContext({
     removeAgentFlightOperation: () => {},
     getAgentFlightAgents: () => {},
     getAgentFlightProducts: () => {},
+
+    // =====================
+    // Functionality (Bookings)
+    // =====================
+    agentBookingsStatus: null,
+    getAgentBookingsStatus: () => {},
 
 });
 

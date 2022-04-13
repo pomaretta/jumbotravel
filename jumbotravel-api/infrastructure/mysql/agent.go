@@ -113,3 +113,21 @@ func (db *MySQL) FetchAgentFlightProducts(agentId, flightId int) (s []dto.Flight
 
 	return
 }
+
+func (db *MySQL) FetchAgentBookingsAggregate(agentId, flightId int) (s []dto.BookingAggregate, err error) {
+
+	qb := &agentbuilders.BookingsAggrQueryBuilder{}
+	qb.SetAgentId(agentId)
+	qb.SetFlightId(flightId)
+
+	ent, err := db.Fetch(&dto.BookingAggregate{}, qb)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, e := range ent {
+		s = append(s, e.(dto.BookingAggregate))
+	}
+
+	return
+}

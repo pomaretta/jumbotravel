@@ -5,7 +5,8 @@ USE jumbotravel;
 CREATE TABLE IF NOT EXISTS bookings (
 
     bookingreferenceid      VARCHAR(255) NOT NULL,
-    bookingitemid           VARCHAR(255) NOT NULL,
+    -- bookingitemid           VARCHAR(255) NOT NULL,
+    productcode             INT NOT NULL,
     status                  VARCHAR(255) NOT NULL,
 
     agent_id                INT NOT NULL,
@@ -29,7 +30,7 @@ CREATE TABLE IF NOT EXISTS bookings (
     hash64                  INT NOT NULL,
 
     -- CONSTRAINT
-    PRIMARY KEY (bookingreferenceid, bookingitemid),
+    PRIMARY KEY (bookingreferenceid, productcode),
     FOREIGN KEY (agent_id) REFERENCES master_agents(agent_id),
     FOREIGN KEY (agentmapping_id) REFERENCES master_agentmapping(agentmapping_id),
     FOREIGN KEY (product_id) REFERENCES master_products(product_id),

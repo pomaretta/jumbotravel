@@ -70,5 +70,6 @@ CREATE TABLE IF NOT EXISTS master_products (
     created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     -- CONSTRAINT
-    PRIMARY KEY (product_id)
+    PRIMARY KEY (product_id),
+    UNIQUE (product_code)
 );
