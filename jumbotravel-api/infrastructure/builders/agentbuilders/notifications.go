@@ -238,9 +238,39 @@ func (qb *NotificationsQueryBuilder) BuildQuery() (string, []interface{}, error)
 			SELECT * FROM notifications n 
 			%s
 		)
-	SELECT * FROM global_notifications
+	SELECT
+		notification_id,
+		scope,
+		resource_id,
+		resource_uuid,
+		title,
+		message,
+		link,
+		extra,
+		type,
+		popup,
+		expires_at,
+		created_at,
+		seen,
+		active
+	FROM global_notifications
 	UNION ALL
-	SELECT * FROM agent_notifications
+	SELECT
+		notification_id,
+		scope,
+		resource_id,
+		resource_uuid,
+		title,
+		message,
+		link,
+		extra,
+		type,
+		popup,
+		expires_at,
+		created_at,
+		seen,
+		active
+	FROM agent_notifications
 	%s
 	`, globalClauses, agentClauses, orderClause)
 

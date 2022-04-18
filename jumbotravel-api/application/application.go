@@ -51,4 +51,9 @@ type MySQLFetcher interface {
 	FetchAgentFlightAgents(agentId, flightId int) ([]dto.FlightAgent, error)
 	FetchAgentFlightProducts(agentId, flightId int) ([]dto.FlightProduct, error)
 	FetchAgentBookingsAggregate(agentId, flightId int) ([]dto.BookingAggregate, error)
+
+	// Agent Bookings
+	FetchAgentBookingDetails(agentId int, bookingReferenceId string) (*dto.BookingAggregate, error)
+	FetchAgentBookingOperations(agentId int, bookingReferenceId string) ([]entity.Notification, error)
+	FetchAgentBookingItems(agentId int, bookingReferenceId string) ([]dto.BookingItem, error)
 }

@@ -75,6 +75,9 @@ class AppWrapper extends Component {
             // Functionality (Bookings)
             // =====================
             agentBookingsStatus: null,
+            agentBookingDetails: null,
+            agentBookingOperations: null,
+            agentBookingItems: null,
 
         }
     }
@@ -617,6 +620,63 @@ class AppWrapper extends Component {
         });
     }
 
+    async getAgentBookingDetails(bookingReferenceId) {
+        this.api.getBookingDetails({
+            token: this.state.token,
+            bookingReferenceId: bookingReferenceId
+        }).then(response => {
+            if (response === null) {
+                this.setState({
+                    agentBookingDetails: new APIError("", 404, "")
+                })
+                return;
+            }
+            this.setState({
+                agentBookingDetails: response
+            })
+        }).catch(error => {
+            if (error instanceof APIError) {
+                if (error.getStatus() === 401) {
+                    this.logout();
+                }
+            }
+        });
+    }
+
+    async getAgentBookingOperations(bookingReferenceId) {
+        this.api.getBookingOperations({
+            token: this.state.token,
+            bookingReferenceId: bookingReferenceId
+        }).then(response => {
+            this.setState({
+                agentBookingOperations: response
+            })
+        }).catch(error => {
+            if (error instanceof APIError) {
+                if (error.getStatus() === 401) {
+                    this.logout();
+                }
+            }
+        });
+    }
+
+    async getAgentBookingItems(bookingReferenceId) {
+        this.api.getBookingItems({
+            token: this.state.token,
+            bookingReferenceId: bookingReferenceId
+        }).then(response => {
+            this.setState({
+                agentBookingItems: response
+            })
+        }).catch(error => {
+            if (error instanceof APIError) {
+                if (error.getStatus() === 401) {
+                    this.logout();
+                }
+            }
+        });
+    }
+
     render() {
         if (this.hasToLogIn()) {
             return <LoginModule app={this} config={this.props.config} />
@@ -687,8 +747,13 @@ class AppWrapper extends Component {
             // Functionalities (Bookings)
             // =====================
             agentBookingsStatus: this.state.agentBookingsStatus,
+            agentBookingDetails: this.state.agentBookingDetails,
+            agentBookingOperations: this.state.agentBookingOperations,
+            agentBookingItems: this.state.agentBookingItems,
             getAgentBookingsStatus: this.getAgentBookingsStatus.bind(this),
-
+            getAgentBookingDetails: this.getAgentBookingDetails.bind(this),
+            getAgentBookingOperations: this.getAgentBookingOperations.bind(this),
+            getAgentBookingItems: this.getAgentBookingItems.bind(this),
         }}>
             <AppRouter config={this.config} />
         </AppContext.Provider>

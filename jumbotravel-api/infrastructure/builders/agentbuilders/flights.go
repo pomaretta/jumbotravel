@@ -197,7 +197,20 @@ func (qb *FlightOperationsQueryBuilder) BuildQuery() (string, []interface{}, err
 
 	query := fmt.Sprintf(`
 	SELECT 
-		n.* 
+		n.notification_id,
+		n.scope,
+		n.resource_id,
+		n.resource_uuid,
+		n.title,
+		n.message,
+		n.link,
+		n.extra,
+		n.type,
+		n.popup,
+		n.expires_at,
+		n.created_at,
+		n.seen,
+		n.active
 	FROM notifications n
 	LEFT JOIN flight_agents fa
 		ON fa.flight_id = n.resource_id

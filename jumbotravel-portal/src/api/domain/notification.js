@@ -7,6 +7,7 @@ class Notification {
         notification_id,
         scope,
         resource_id,
+        resource_uuid,
         title,
         message,
         link,
@@ -23,6 +24,7 @@ class Notification {
         this.notification_id = notification_id;
         this.scope = scope;
         this.resource_id = resource_id;
+        this.resource_uuid = resource_uuid;
         this.title = title;
         this.message = message;
         this.link = link;

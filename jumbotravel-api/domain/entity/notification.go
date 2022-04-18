@@ -6,6 +6,7 @@ type Notification struct {
 	NotificationId *int       `json:"notification_id"`
 	Scope          *string    `json:"scope"`
 	ResourceId     *int       `json:"resource_id"`
+	ResourceUuid   *string    `json:"resource_uuid"`
 	Title          *string    `json:"title"`
 	Message        *string    `json:"message"`
 	Link           *string    `json:"link"`
@@ -24,6 +25,7 @@ func (v *Notification) GetDestFields() []interface{} {
 		&v.NotificationId,
 		&v.Scope,
 		&v.ResourceId,
+		&v.ResourceUuid,
 		&v.Title,
 		&v.Message,
 		&v.Link,

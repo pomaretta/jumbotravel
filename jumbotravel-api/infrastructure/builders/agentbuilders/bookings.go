@@ -9,8 +9,9 @@ import (
 type BookingsAggrQueryBuilder struct {
 	builders.MySQLQueryBuilder
 
-	agentId  int
-	flightId int
+	agentId            int
+	bookingReferenceId string
+	flightId           int
 }
 
 func (qb *BookingsAggrQueryBuilder) SetAgentId(agentId int) {
@@ -19,6 +20,10 @@ func (qb *BookingsAggrQueryBuilder) SetAgentId(agentId int) {
 
 func (qb *BookingsAggrQueryBuilder) SetFlightId(flightId int) {
 	qb.flightId = flightId
+}
+
+func (qb *BookingsAggrQueryBuilder) SetBookingReferenceId(bookingReferenceId string) {
+	qb.bookingReferenceId = bookingReferenceId
 }
 
 func (qb *BookingsAggrQueryBuilder) buildWhereClauses() (string, []interface{}, error) {
@@ -34,6 +39,11 @@ func (qb *BookingsAggrQueryBuilder) buildWhereClauses() (string, []interface{}, 
 	if qb.flightId != 0 {
 		partialQuery = fmt.Sprintf("%s AND bd.flight_id = ?", partialQuery)
 		args = append(args, qb.flightId)
+	}
+
+	if qb.bookingReferenceId != "" {
+		partialQuery = fmt.Sprintf("%s AND bd.bookingreferenceid = ?", partialQuery)
+		args = append(args, qb.bookingReferenceId)
 	}
 
 	partialQuery = fmt.Sprintf("%s AND bl.lt = bd.created_at", partialQuery)
@@ -110,6 +120,76 @@ func (qb *BookingsAggrQueryBuilder) BuildQuery() (string, []interface{}, error) 
 	FROM bookingdetail bd
 	LEFT JOIN bookinglatest bl
 		ON bl.bookingreferenceid = bd.bookingreferenceid
+	%s
+	%s
+	`, whereClauses, orderClause)
+
+	return query, args, nil
+}
+
+type BookingItemsQueryBuilder struct {
+	builders.MySQLQueryBuilder
+
+	agentId            int
+	bookingReferenceId string
+}
+
+func (qb *BookingItemsQueryBuilder) SetAgentId(agentId int) {
+	qb.agentId = agentId
+}
+
+func (qb *BookingItemsQueryBuilder) SetBookingReferenceId(bookingReferenceId string) {
+	qb.bookingReferenceId = bookingReferenceId
+}
+
+func (qb *BookingItemsQueryBuilder) buildWhereClauses() (string, []interface{}, error) {
+	partialQuery := "WHERE 1=1"
+	args := []interface{}{}
+
+	if qb.agentId == 0 {
+		return "", nil, fmt.Errorf("agent id is required")
+	}
+	partialQuery = fmt.Sprintf("%s AND fa.agentmapping_id = ?", partialQuery)
+	args = append(args, qb.agentId)
+
+	if qb.bookingReferenceId == "" {
+		return "", nil, fmt.Errorf("booking reference id is required")
+	}
+	partialQuery = fmt.Sprintf("%s AND b.bookingreferenceid = ?", partialQuery)
+	args = append(args, qb.bookingReferenceId)
+
+	return partialQuery, args, nil
+}
+
+func (qb *BookingItemsQueryBuilder) BuildQuery() (string, []interface{}, error) {
+
+	whereClauses, args, err := qb.buildWhereClauses()
+	if err != nil {
+		return "", nil, err
+	}
+
+	orderClause := "ORDER BY b.created_at DESC"
+
+	query := fmt.Sprintf(`
+	SELECT
+		b.bookingreferenceid,
+		b.productcode,
+		b.status,
+		b.items,
+		b.price,
+		mp.name,
+		mp.brand,
+		mp.saleprice,
+		b.created_at,
+		b.updated_at
+	FROM
+		bookings b
+	LEFT JOIN flights f
+		ON f.flight_id = b.flight_id
+	RIGHT JOIN flight_agents fa 
+		ON fa.flight_id = f.flight_id
+	LEFT JOIN master_products mp 
+		ON mp.product_id = b.product_id AND mp.product_code = b.productcode
 	%s
 	%s
 	`, whereClauses, orderClause)

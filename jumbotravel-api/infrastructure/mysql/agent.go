@@ -6,6 +6,7 @@ import (
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/dto"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/entity"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/infrastructure/builders/agentbuilders"
+	"github.com/pomaretta/jumbotravel/jumbotravel-api/infrastructure/builders/masterbuilders"
 )
 
 func (db *MySQL) FetchAgentNotifications(agentId int, seen, active, expired, popup string) (s []entity.Notification, err error) {
@@ -127,6 +128,65 @@ func (db *MySQL) FetchAgentBookingsAggregate(agentId, flightId int) (s []dto.Boo
 
 	for _, e := range ent {
 		s = append(s, e.(dto.BookingAggregate))
+	}
+
+	return
+}
+
+func (db *MySQL) FetchAgentBookingDetails(agentId int, bookingReferenceId string) (*dto.BookingAggregate, error) {
+
+	qb := &agentbuilders.BookingsAggrQueryBuilder{}
+	qb.SetAgentId(agentId)
+	qb.SetBookingReferenceId(bookingReferenceId)
+
+	ent, err := db.Fetch(&dto.BookingAggregate{}, qb)
+	if err != nil {
+		return nil, err
+	}
+	// If no result, return empty struct
+	if len(ent) == 0 {
+		return nil, nil
+	}
+	bookingDetails := ent[0].(dto.BookingAggregate)
+
+	return &bookingDetails, nil
+}
+
+func (db *MySQL) FetchAgentBookingOperations(agentId int, bookingReferenceId string) (s []entity.Notification, err error) {
+
+	qb := &masterbuilders.NotificationQueryBuilder{}
+	qb.SetScope([]string{"BOOKING"})
+	qb.SetResourceUuid([]string{bookingReferenceId})
+	qb.SetActive("0")
+	qb.SetExpired("0")
+	qb.SetPopup("0")
+	qb.SetSeen("0")
+
+	ent, err := db.Fetch(&entity.Notification{}, qb)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, e := range ent {
+		s = append(s, e.(entity.Notification))
+	}
+
+	return
+}
+
+func (db *MySQL) FetchAgentBookingItems(agentId int, bookingReferenceId string) (s []dto.BookingItem, err error) {
+
+	qb := &agentbuilders.BookingItemsQueryBuilder{}
+	qb.SetAgentId(agentId)
+	qb.SetBookingReferenceId(bookingReferenceId)
+
+	ent, err := db.Fetch(&dto.BookingItem{}, qb)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, e := range ent {
+		s = append(s, e.(dto.BookingItem))
 	}
 
 	return

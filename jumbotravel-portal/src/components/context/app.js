@@ -63,8 +63,13 @@ const AppContext = React.createContext({
     // Functionality (Bookings)
     // =====================
     agentBookingsStatus: null,
+    agentBookingDetails: null,
+    agentBookingOperations: null,
+    agentBookingItems: null,
     getAgentBookingsStatus: () => {},
-
+    getAgentBookingDetails: () => {},
+    getAgentBookingOperations: () => {},
+    getAgentBookingItems: () => {},
 });
 
 export default AppContext;

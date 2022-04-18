@@ -25,9 +25,9 @@ function Booking(props) {
     }
 
     return (
-        <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+        <tr className="bg-white border-b">
             {/* Reference ID */}
-            <th scope="row" className="px-6 py-4 text-gray-900 dark:text-white whitespace-nowrap | underline | font-bold | text-brand-blue">
+            <th scope="row" className="px-6 py-4 text-gray-900 whitespace-nowrap | underline | font-bold | text-brand-blue">
                 <a
                     href={`/bookings/${props.booking.bookingreferenceid}`}
                 >
@@ -57,8 +57,8 @@ function Booking(props) {
                 >
                     {
                         props.booking.provider_id ?
-                        `${props.booking.provider_name} ${props.booking.provider_surname}` :
-                        ""
+                            `${props.booking.provider_name} ${props.booking.provider_surname}` :
+                            ""
                     }
                 </a>
             </td>
@@ -84,6 +84,96 @@ function Booking(props) {
     );
 }
 
+function MobileBooking(props) {
+
+    let statusBackground = "text-red-500";
+    switch (String(props.booking.status).toLowerCase()) {
+        case "pending":
+            statusBackground = "text-yellow-500";
+            break;
+        case "completed":
+            statusBackground = "text-green-500";
+            break;
+        case "cancelled":
+            statusBackground = "text-red-500";
+            break;
+        default:
+            statusBackground = "text-red-500";
+            break;
+    }
+
+    return (
+        <div className="bg-white | p-4 | rounded-md | shadow-sm | flex flex-col justify-start items-start | space-y-4">
+            <div className="text-2xl space-y-2">
+                <p className="text-brand-blue | font-bold">Booking Reference ID</p>
+                <a
+                    href={`/bookings/${props.booking.bookingreferenceid}`}
+                    className="text-brand-blue | font-bold | underline"
+                >
+                    {props.booking.bookingreferenceid}
+                </a>
+            </div>
+            <div className="text-2xl space-y-2">
+                <p className="text-brand-blue | font-bold">Flight</p>
+                <a
+                    href={`/flights/${props.booking.flight_id}`}
+                    className="underline | font-bold | text-brand-blue"
+                >
+                    {props.booking.flight_id}
+                </a>
+            </div>
+            <div className="text-2xl space-y-2">
+                <p className="text-brand-blue | font-bold">Agent</p>
+                <a
+                    href={`/agents/${props.booking.agent_id}`}
+                    className="underline | font-bold | text-brand-blue"
+                >
+                    {`${props.booking.agent_name} ${props.booking.agent_surname}`}
+                </a>
+            </div>
+            <div className="text-2xl space-y-2">
+                <p className="text-brand-blue | font-bold">Provider</p>
+                <a
+                    href={props.booking.provider_id ? `/agents/${props.booking.provider_id}` : null}
+                    className="underline | font-bold | text-brand-blue"
+                >
+                    {
+                        props.booking.provider_id ?
+                            `${props.booking.provider_name} ${props.booking.provider_surname}` :
+                            ""
+                    }
+                </a>
+            </div>
+            <div className="text-2xl space-y-2">
+                <p className="text-brand-blue | font-bold">Items</p>
+                <p>
+                    {props.booking.items}
+                </p>
+            </div>
+            <div className="text-2xl space-y-2">
+                <p className="text-brand-blue | font-bold">Total</p>
+                <p>
+                    {props.booking.total}€
+                </p>
+            </div>
+            <div className="text-2xl space-y-2">
+                <p className="text-brand-blue | font-bold">Created At</p>
+                <p>
+                    {props.booking.created_at}
+                </p>
+            </div>
+            <div className="text-2xl space-y-2">
+                <p className="text-brand-blue | font-bold">Status</p>
+                <p
+                    className={`font-bold | ${statusBackground}`}
+                >
+                    {props.booking.status}
+                </p>
+            </div>
+        </div>
+    );
+}
+
 class BookingsContent extends Component {
 
     render() {
@@ -101,8 +191,9 @@ class BookingsContent extends Component {
                     </div>
                 </div>
                 <div className="flex flex-col | items-start justify-center | w-full | px-4 | mt-5">
-                    <div className="relative overflow-x-auto shadow-md sm:rounded-lg | w-full">
-                        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                    {/* Desktop */}
+                    <div className="hidden sm:block relative overflow-x-auto shadow-md sm:rounded-lg | w-full">
+                        <table className="w-full text-sm text-left text-gray-500">
                             <thead className="text-xs text-white uppercase bg-jt-primary">
                                 <tr>
                                     <th scope="col" className="px-6 py-3">
@@ -134,22 +225,41 @@ class BookingsContent extends Component {
                             <tbody>
                                 {
                                     this.context.agentBookingsStatus ?
-                                    (
-                                        this.context.agentBookingsStatus.bookings.map((booking, index) => {
-                                            return <Booking key={index} booking={booking} />
-                                        })
-                                    ) : (
-                                        <tr>
-                                            <td colSpan="8" className="px-6 py-4">
-                                                <p className="text-center">
-                                                    No bookings found
-                                                </p>
-                                            </td>
-                                        </tr>
-                                    )
+                                        (
+                                            this.context.agentBookingsStatus.bookings.map((booking, index) => {
+                                                return <Booking key={index} booking={booking} />
+                                            })
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="8" className="px-6 py-4">
+                                                    <p className="text-center">
+                                                        No bookings found
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                        )
                                 }
                             </tbody>
                         </table>
+                    </div>
+                    {/* Mobile */}
+                    <div className="sm:hidden w-full | flex flex-col | justify-start items-start | space-y-4">
+                        {
+                            this.context.agentBookingsStatus ?
+                                (
+                                    this.context.agentBookingsStatus.bookings.map((booking, index) => {
+                                        return <MobileBooking key={index} booking={booking} />
+                                    })
+                                ) : (
+                                    <tr>
+                                        <td colSpan="8" className="px-6 py-4">
+                                            <p className="text-center">
+                                                No bookings found
+                                            </p>
+                                        </td>
+                                    </tr>
+                                )
+                        }
                     </div>
                 </div>
             </div>

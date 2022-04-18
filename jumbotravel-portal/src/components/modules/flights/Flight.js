@@ -374,7 +374,7 @@ class FlightAgents extends Component {
                                                 key={index}
                                                 className="w-full | bg-gray-50 | h-12 | shadow hover:shadow-md | rounded-md | flex flex-row | justify-between items-center | p-2"
                                                 href={
-                                                    `/agent/${item.getAgentId()}`
+                                                    `/agents/${item.getAgentId()}`
                                                 }
                                             >
                                                 <p className="text-md sm:text-sm">

@@ -4,13 +4,14 @@ import APIError from './error';
 import JWTToken from '../components/utils/token';
 import Agent from './domain/agent_data';
 import Flight from './domain/agent_flight';
+import { BookingDetails } from './domain/agent_bookings';
 
 // Models
 import NotificationCollection from '../api/collection/notification';
 import FlightsCollection from './collection/flights';
 import FlightAgentsCollection from './collection/flight_agents';
 import FlightProductsCollection from './collection/flight_products';
-import { BookingStatusCollection } from './collection/bookings';
+import { BookingStatusCollection, BookingItemCollection } from './collection/bookings';
 
 function requestWithEnvironment({ schema, hostname, path }) {
     return `${schema}://${hostname}${path}`;
@@ -410,6 +411,10 @@ class RestClient {
         return FlightProductsCollection.parse(data["result"]);
     }
 
+    // ================
+    // BOOKING
+    // ================
+
     async getAgentBookingStatus({ token }) {
 
         const response = await fetch(
@@ -419,10 +424,10 @@ class RestClient {
                 token: token,
                 path: `/bookings/status`
             }), {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token.getToken()}`
-                }
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token.getToken()}`
+            }
         });
 
         if (response.status !== 200) {
@@ -442,6 +447,109 @@ class RestClient {
         }
 
         return BookingStatusCollection.parse(data["result"]);
+    }
+
+    async getBookingDetails({ token, bookingReferenceId }) {
+
+        const response = await fetch(
+            getAgentPath({
+                schema: this.schema,
+                hostname: this.hostname,
+                token: token,
+                path: `/bookings/${bookingReferenceId}/details`
+            }), {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token.getToken()}`
+            }
+        });
+
+        if (response.status !== 200) {
+            throw new APIError(
+                "error on get booking details",
+                response.status,
+                response.statusText
+            )
+        }
+
+        // Get response
+        const data = await response.json();
+
+        // Check if data is null
+        if (data["result"] === null) {
+            return null;
+        }
+
+        return new BookingDetails(data["result"]);
+    }
+
+    async getBookingOperations({ token, bookingReferenceId }) {
+
+        const response = await fetch(
+            getAgentPath({
+                schema: this.schema,
+                hostname: this.hostname,
+                token: token,
+                path: `/bookings/${bookingReferenceId}/operations`
+            }), {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token.getToken()}`
+            }
+        });
+
+        if (response.status !== 200) {
+            throw new APIError(
+                "error on get booking operations",
+                response.status,
+                response.statusText
+            )
+        }
+
+        // Get response
+        const data = await response.json();
+
+        let isNullResponse = data["result"] === null;
+        if (isNullResponse) {
+            return new NotificationCollection([]);
+        }
+
+        // Return data
+        return NotificationCollection.parse(data["result"]);
+    }
+
+    async getBookingItems({ token, bookingReferenceId }) {
+        const response = await fetch(
+            getAgentPath({
+                schema: this.schema,
+                hostname: this.hostname,
+                token: token,
+                path: `/bookings/${bookingReferenceId}/items`
+            }), {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token.getToken()}`
+            }
+        });
+
+        if (response.status !== 200) {
+            throw new APIError(
+                "error on get booking items",
+                response.status,
+                response.statusText
+            )
+        }
+
+        // Get response
+        const data = await response.json();
+
+        let isNullResponse = data["result"] === null;
+        if (isNullResponse) {
+            return new BookingItemCollection([]);
+        }
+
+        // Return data
+        return BookingItemCollection.parse(data["result"]);
     }
 
 }

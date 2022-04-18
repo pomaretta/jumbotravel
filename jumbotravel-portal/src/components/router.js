@@ -11,6 +11,7 @@ import FlightIndividual from './modules/flights/Flight';
 
 // Bookings
 import BookingsModule from './modules/bookings/Module';
+import BookingIndividual from './modules/bookings/Booking';
 
 import PlanesModule from './modules/planes/Module';
 import NotFound from './modules/404';
@@ -108,6 +109,11 @@ class AppRouter extends React.Component {
 
                     {/* Bookings */}
                     <Route key='bookings' path='/bookings' element={<BookingsModule app={this.props.app} config={this.props.config} />} />
+                    <Route
+                        key='bookings_details'
+                        path="/bookings/:id"
+                        element={<BookingIndividual />}
+                    />
 
                     <Route key='planes' path='/planes' element={<PlanesModule app={this.props.app} config={this.props.config} />} />
 

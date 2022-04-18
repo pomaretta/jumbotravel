@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS notifications (
     scope                       VARCHAR(255) NOT NULL,
     -- Can be used to link to resource (if provided must match with scope)
     resource_id                 INT NULL,
+    -- Can be used to link to resource (if provided must match with scope)
+    resource_uuid               VARCHAR(255) NULL,
 
     -- Notification
     title                       VARCHAR(255) NOT NULL,

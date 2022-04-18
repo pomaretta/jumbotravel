@@ -1,4 +1,4 @@
-import { BookingStatus } from "../domain/agent_bookings";
+import { BookingStatus, BookingItem } from "../domain/agent_bookings";
 
 class BookingStatusCollection {
 
@@ -16,4 +16,20 @@ class BookingStatusCollection {
 
 }
 
-export { BookingStatusCollection };
+class BookingItemCollection {
+
+    constructor({
+        items = [],
+    }) {
+        this.items = items;
+    }
+
+    static parse(data) {
+        return new BookingItemCollection({
+            items: data.map(item => new BookingItem(item))
+        });
+    }
+
+}
+
+export { BookingStatusCollection, BookingItemCollection };

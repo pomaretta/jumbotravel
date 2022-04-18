@@ -12,6 +12,7 @@ type NotificationQueryBuilder struct {
 
 	notificationId   []int
 	resourceId       []int
+	resourceUuid     []string
 	notificationType []string
 	scope            []string
 	seen             string
@@ -26,6 +27,10 @@ func (qb *NotificationQueryBuilder) SetNotificationId(notificationId []int) {
 
 func (qb *NotificationQueryBuilder) SetResourceId(resourceId []int) {
 	qb.resourceId = resourceId
+}
+
+func (qb *NotificationQueryBuilder) SetResourceUuid(resourceUuid []string) {
+	qb.resourceUuid = resourceUuid
 }
 
 func (qb *NotificationQueryBuilder) SetNotificationType(notificationType []string) {
@@ -81,6 +86,20 @@ func (qb *NotificationQueryBuilder) buildWhereClause() (string, []interface{}, e
 			}
 			partialQuery = fmt.Sprintf("%s,?", partialQuery)
 			args = append(args, resourceId)
+		}
+		partialQuery = fmt.Sprintf("%s)", partialQuery)
+	}
+
+	if len(qb.resourceUuid) > 0 {
+		partialQuery = fmt.Sprintf("%s and resource_uuid in (", partialQuery)
+		for idx, resourceUuid := range qb.resourceUuid {
+			if idx == 0 {
+				partialQuery = fmt.Sprintf("%s?", partialQuery)
+				args = append(args, resourceUuid)
+				continue
+			}
+			partialQuery = fmt.Sprintf("%s,?", partialQuery)
+			args = append(args, resourceUuid)
 		}
 		partialQuery = fmt.Sprintf("%s)", partialQuery)
 	}
@@ -154,12 +173,14 @@ func (qb *NotificationQueryBuilder) BuildQuery() (string, []interface{}, error) 
 	if err != nil {
 		return "", nil, err
 	}
+	orderBy := "order by created_at desc"
 
 	query := fmt.Sprintf(`
 		select
 			notification_id,
 			scope,
 			resource_id,
+			resource_uuid,
 			title,
 			message,
 			link,
@@ -172,7 +193,8 @@ func (qb *NotificationQueryBuilder) BuildQuery() (string, []interface{}, error) 
 			active
 		FROM notifications
 		%s
-	`, whereClauses)
+		%s
+	`, whereClauses, orderBy)
 
 	return query, args, nil
 }

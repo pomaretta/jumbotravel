@@ -34,3 +34,15 @@ func (app *Application) GetAgentFlightProducts(agentId, flightId int) ([]dto.Fli
 func (app *Application) GetAgentBookingsAggregate(agentId, flightId int) ([]dto.BookingAggregate, error) {
 	return app.MySQLFetcher.FetchAgentBookingsAggregate(agentId, flightId)
 }
+
+func (app *Application) GetAgentBookingDetails(agentId int, bookingReferenceId string) (*dto.BookingAggregate, error) {
+	return app.MySQLFetcher.FetchAgentBookingDetails(agentId, bookingReferenceId)
+}
+
+func (app *Application) GetAgentBookingOperations(agentId int, bookingReferenceId string) ([]entity.Notification, error) {
+	return app.MySQLFetcher.FetchAgentBookingOperations(agentId, bookingReferenceId)
+}
+
+func (app *Application) GetAgentBookingItems(agentId int, bookingReferenceId string) ([]dto.BookingItem, error) {
+	return app.MySQLFetcher.FetchAgentBookingItems(agentId, bookingReferenceId)
+}
