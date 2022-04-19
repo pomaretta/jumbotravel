@@ -42,7 +42,7 @@ func (qb *MasterAgentQueryBuilder) buildWhereClause() (string, []interface{}, er
 	args := []interface{}{}
 
 	if qb.AgentID > -1 {
-		partialQuery = fmt.Sprintf("%s and ag.agent_id = ?", partialQuery)
+		partialQuery = fmt.Sprintf("%s and map.agentmapping_id = ?", partialQuery)
 		args = append(args, qb.AgentID)
 	}
 

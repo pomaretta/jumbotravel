@@ -411,6 +411,35 @@ class RestClient {
         return FlightProductsCollection.parse(data["result"]);
     }
 
+    async updateFlightStatus({ token, flightId }) {
+
+        // Make request
+        const response = await fetch(
+            requestWithParameters({
+                url: getAgentPath({
+                    schema: this.schema,
+                    hostname: this.hostname,
+                    token: token,
+                    path: `/flights/${flightId}/status`
+                })
+            }), {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token.getToken()}`
+            }
+        });
+
+        if (response.status !== 200) {
+            throw new APIError(
+                "error on update flight status",
+                response.status,
+                response.statusText
+            )
+        }
+
+        return true;
+    }
+
     // ================
     // BOOKING
     // ================

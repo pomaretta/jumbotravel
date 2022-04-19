@@ -9,6 +9,7 @@
     "@testing-library/react": "^12.1.4",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^0.26.1",
+    "daisyui": "^2.14.1",
     "lord-icon-element": "^3.3.3",
     "lottie-web": "^5.9.1",
     "prop-types": "^15.8.1",

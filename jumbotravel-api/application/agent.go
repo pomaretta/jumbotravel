@@ -46,3 +46,7 @@ func (app *Application) GetAgentBookingOperations(agentId int, bookingReferenceI
 func (app *Application) GetAgentBookingItems(agentId int, bookingReferenceId string) ([]dto.BookingItem, error) {
 	return app.MySQLFetcher.FetchAgentBookingItems(agentId, bookingReferenceId)
 }
+
+func (app *Application) UpdateFlightStatus(flightId int, status string) (int64, error) {
+	return app.MySQLFetcher.UpdateFlightStatus(flightId, status)
+}

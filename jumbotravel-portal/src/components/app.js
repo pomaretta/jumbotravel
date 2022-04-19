@@ -597,6 +597,13 @@ class AppWrapper extends Component {
         });
     }
 
+    updateFlightStatus(flightId) {
+        return this.api.updateFlightStatus({
+            token: this.state.token,
+            flightId: flightId
+        })
+    }
+
     // END FUNCTIONALITIES (FLIGHTS)
     // ==================
 
@@ -742,6 +749,7 @@ class AppWrapper extends Component {
             agentFlightOperations: this.state.agentFlightOperations,
             agentFlightAgents: this.state.agentFlightAgents,
             agentFlightProducts: this.state.agentFlightProducts,
+            updateFlightStatus: this.updateFlightStatus.bind(this),
 
             // =====================
             // Functionalities (Bookings)

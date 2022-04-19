@@ -21,14 +21,25 @@ class Navbar extends React.Component {
 
 		this.state = {
 			currentDate: new Date(),
+			interval: null,
 		};
 
-		// Set the date every second
-		// this.context.addInterval(setInterval(() => {
-		// 	this.setState({
-		// 		currentDate: new Date(),
-		// 	});
-		// }, 1000));
+	}
+
+	componentDidMount() {
+		if (!this.state.interval) {
+			this.setState({
+				interval: setInterval(() => {
+					this.setState({
+						currentDate: new Date(),
+					});
+				}, 60 * 1000),
+			});
+		}
+	}
+
+	componentWillUnmount() {
+		clearInterval(this.state.interval);
 	}
 
 	render() {
@@ -78,7 +89,7 @@ class Navbar extends React.Component {
 								</div>
 								<div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
 									{/* Local Datetime and UTC Datetime */}
-									{/* <div className='hidden sm:flex flex-col items-end justify-center'>
+									<div className='hidden sm:flex flex-col items-end justify-center'>
 										<p className="text-xs text-gray-500">
 											<span className='font-bold mr-2'>
 												{
@@ -86,7 +97,7 @@ class Navbar extends React.Component {
 												}
 											</span>
 											{
-												this.state.currentDate.toLocaleString()
+												this.state.currentDate.toLocaleString().split(' ').slice(0, 5).join(' ').split(':').slice(0, 2).join(':')
 											}
 										</p>
 										<p className="text-xs text-gray-500">
@@ -94,10 +105,11 @@ class Navbar extends React.Component {
 												UTC
 											</span>
 											{
-												this.state.currentDate.toUTCString().replace(/GMT.*$/, '')
+												// Get UTC String without seconds
+												this.state.currentDate.toUTCString().replace(/GMT.*$/, '').split(' ').slice(0, 5).join(' ').split(':').slice(0, 2).join(':')
 											}
 										</p>
-									</div> */}
+									</div>
 									{/* Profile dropdown */}
 									{/* <Menu as="div" className="ml-3 relative">
 										<div>

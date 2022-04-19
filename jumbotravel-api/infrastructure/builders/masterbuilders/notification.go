@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/dto"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/infrastructure/builders"
 )
 
@@ -195,6 +196,55 @@ func (qb *NotificationQueryBuilder) BuildQuery() (string, []interface{}, error) 
 		%s
 		%s
 	`, whereClauses, orderBy)
+
+	return query, args, nil
+}
+
+type PutNotificationQueryBuilder struct {
+	builders.MySQLQueryBuilder
+
+	notifications []dto.NotificationInput
+}
+
+func (qb *PutNotificationQueryBuilder) SetNotifications(notifications []dto.NotificationInput) {
+	qb.notifications = notifications
+}
+
+func (qb *PutNotificationQueryBuilder) BuildQuery() (string, []interface{}, error) {
+
+	var values string
+	var args []interface{}
+
+	for idx, notification := range qb.notifications {
+
+		valueQuery, valueArgs, err := notification.Build()
+		if err != nil {
+			return "", nil, err
+		}
+
+		if idx == 0 {
+			values = valueQuery
+		} else {
+			values = fmt.Sprintf("%s, %s", values, valueQuery)
+		}
+		args = append(args, valueArgs...)
+	}
+
+	query := fmt.Sprintf(`
+		INSERT INTO notifications (
+			scope,
+			resource_id,
+			resource_uuid,
+			title,
+			message,
+			link,
+			extra,
+			type,
+			popup,
+			expires_at
+		) VALUES
+		%s;
+	`, values)
 
 	return query, args, nil
 }

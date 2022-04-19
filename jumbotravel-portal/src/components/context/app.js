@@ -58,6 +58,7 @@ const AppContext = React.createContext({
     removeAgentFlightOperation: () => {},
     getAgentFlightAgents: () => {},
     getAgentFlightProducts: () => {},
+    updateFlightStatus: () => {},
 
     // =====================
     // Functionality (Bookings)

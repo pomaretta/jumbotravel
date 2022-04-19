@@ -308,3 +308,82 @@ func (qb *FlightAgentsQueryBuilder) BuildQuery() (string, []interface{}, error) 
 
 	return query, args, nil
 }
+
+// =======================
+// Functionality BUILDERS
+// =======================
+
+type UpdateFlightStatusQueryBuilder struct {
+	builders.MySQLQueryBuilder
+
+	agentId  int
+	flightId int
+	status   string
+}
+
+func (qb *UpdateFlightStatusQueryBuilder) SetAgentId(agentId int) {
+	qb.agentId = agentId
+}
+
+func (qb *UpdateFlightStatusQueryBuilder) SetFlightId(flightId int) {
+	qb.flightId = flightId
+}
+
+func (qb *UpdateFlightStatusQueryBuilder) SetStatus(status string) {
+	qb.status = status
+}
+
+func (qb *UpdateFlightStatusQueryBuilder) buildSetClauses() (string, []interface{}, error) {
+
+	partialQuery := "SET "
+	args := []interface{}{}
+
+	// Flight ID is required
+	if qb.flightId <= 0 {
+		return "", nil, fmt.Errorf("flight id is required")
+	}
+	partialQuery = fmt.Sprintf("%s status = ?", partialQuery)
+	args = append(args, qb.status)
+
+	return partialQuery, args, nil
+}
+
+func (qb *UpdateFlightStatusQueryBuilder) buildWhereClauses() (string, []interface{}, error) {
+
+	partialQuery := "where 1=1"
+	args := []interface{}{}
+
+	// Flight ID is required
+	if qb.flightId <= 0 {
+		return "", nil, fmt.Errorf("flight id is required")
+	}
+	partialQuery = fmt.Sprintf("%s AND flight_id = ?", partialQuery)
+	args = append(args, qb.flightId)
+
+	return partialQuery, args, nil
+}
+
+func (qb *UpdateFlightStatusQueryBuilder) BuildQuery() (string, []interface{}, error) {
+
+	var args []interface{}
+
+	setClauses, setArgs, err := qb.buildSetClauses()
+	if err != nil {
+		return "", nil, err
+	}
+	args = append(args, setArgs...)
+
+	whereClauses, whereArgs, err := qb.buildWhereClauses()
+	if err != nil {
+		return "", nil, err
+	}
+	args = append(args, whereArgs...)
+
+	query := fmt.Sprintf(`
+		UPDATE flights
+		%s
+		%s
+	`, setClauses, whereClauses)
+
+	return query, args, nil
+}

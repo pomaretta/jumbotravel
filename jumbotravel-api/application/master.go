@@ -1,6 +1,9 @@
 package application
 
-import "github.com/pomaretta/jumbotravel/jumbotravel-api/domain/entity"
+import (
+	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/dto"
+	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/entity"
+)
 
 func (app *Application) GetMasterAirports(airpotId int, country, city, airport string) ([]entity.MasterAirport, error) {
 	return app.MySQLFetcher.FetchMasterAirports(airpotId, country, city, airport)
@@ -20,4 +23,8 @@ func (app *Application) GetMasterProducts(productId, productCode int) ([]entity.
 
 func (app *Application) GetNotifications(notificationId, resourceId []int, notificationType, scope []string, seen, active, expired, popup string) ([]entity.Notification, error) {
 	return app.MySQLFetcher.FetchNotifications(notificationId, resourceId, notificationType, scope, seen, active, expired, popup)
+}
+
+func (app *Application) PutNotifications(notifications []dto.NotificationInput) (int64, error) {
+	return app.MySQLFetcher.PutNotification(notifications)
 }

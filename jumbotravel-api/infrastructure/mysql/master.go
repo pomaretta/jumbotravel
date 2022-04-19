@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/dto"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/entity"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/infrastructure/builders/masterbuilders"
 )
@@ -105,4 +106,12 @@ func (db *MySQL) FetchNotifications(notificationId, resourceId []int, notificati
 	}
 
 	return
+}
+
+func (db *MySQL) PutNotification(notifications []dto.NotificationInput) (int64, error) {
+
+	qb := &masterbuilders.PutNotificationQueryBuilder{}
+	qb.SetNotifications(notifications)
+
+	return db.Put(qb)
 }

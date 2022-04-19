@@ -191,3 +191,12 @@ func (db *MySQL) FetchAgentBookingItems(agentId int, bookingReferenceId string) 
 
 	return
 }
+
+func (db *MySQL) UpdateFlightStatus(flightId int, status string) (int64, error) {
+
+	qb := &agentbuilders.UpdateFlightStatusQueryBuilder{}
+	qb.SetFlightId(flightId)
+	qb.SetStatus(status)
+
+	return db.Update(qb)
+}

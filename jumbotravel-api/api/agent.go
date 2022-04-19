@@ -29,6 +29,10 @@ func (api *API) initAgent() {
 				flightDataGroup.GET("/operations", agent.FlightOperations(api.application))
 				flightDataGroup.GET("/agents", agent.FlightAgents(api.application))
 				flightDataGroup.GET("/products", agent.FlightProducts(api.application))
+
+				// Functionality
+				flightDataGroup.POST("/status", agent.UpdateFlightStatus(api.application))
+
 			}
 		}
 
