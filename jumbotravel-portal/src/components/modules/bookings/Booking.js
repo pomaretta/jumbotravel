@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet";
 
 import Sidebar from '../../base/sidebar';
 import NavBar from '../../base/navbar';
+import Modal from '../../base/modal';
 import Notifications from "../../base/notifications";
 import Context from '../../context/app';
 import withRouter from '../../utils/router';
@@ -163,7 +164,7 @@ function BookingItem(props) {
                         <p className="text-sm">
                             <span className="mr-2 font-bold text-brand-blue">Total:</span>
                             {
-                                (parseInt(props.item.items) * parseFloat(props.item.price))
+                                (parseInt(props.item.items) * parseFloat(props.item.price)).toFixed(2)
                             }€
                         </p>
                     </div>
@@ -187,7 +188,7 @@ function BookingItem(props) {
                         <p className="text-xs">
                             <span className="mr-2 font-bold text-brand-blue">Total:</span>
                             {
-                                (parseInt(props.item.items) * parseFloat(props.item.price))
+                                (parseInt(props.item.items) * parseFloat(props.item.price)).toFixed(2)
                             }€
                         </p>
                     </div>
@@ -384,7 +385,7 @@ class BookingItems extends Component {
                                     <span className="ml-2">
                                         {
                                             this.context.agentBookingDetails ?
-                                                `${this.context.agentBookingDetails.total}€` :
+                                                `${parseFloat(this.context.agentBookingDetails.total).toFixed(2)}€` :
                                                 "0€"
                                         }
                                     </span>
@@ -458,6 +459,7 @@ class Module extends Component {
                 </Helmet>
                 <Sidebar app={this.props.app} config={this.props.config} current={2} />
                 <Notifications app={this.props.app} config={this.props.config} />
+                <Modal />
                 <div className="relative w-full h-full | flex flex-col justify-start items-start">
                     {/* NavBar */}
                     <NavBar app={this.props.app} config={this.props.config} />

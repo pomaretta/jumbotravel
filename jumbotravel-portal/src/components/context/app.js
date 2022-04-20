@@ -12,6 +12,14 @@ const AppContext = React.createContext({
     addInterval: () => {},
     removeInterval: () => {},
 
+    // MODAL
+    show: false,
+    pressed: null,
+    data: null,
+    changeState: () => {},
+    createModal: () => {},
+    closeModal: () => {}, 
+
     // =====================
     // AGENT DATA
     // =====================
@@ -71,6 +79,7 @@ const AppContext = React.createContext({
     getAgentBookingDetails: () => {},
     getAgentBookingOperations: () => {},
     getAgentBookingItems: () => {},
+    putBookingOrder: () => {},
 });
 
 export default AppContext;

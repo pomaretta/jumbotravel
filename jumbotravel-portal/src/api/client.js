@@ -581,6 +581,41 @@ class RestClient {
         return BookingItemCollection.parse(data["result"]);
     }
 
+    async putBookingOrder({ token, flightId, items }) {
+
+        // Make request
+        const response = await fetch(
+            requestWithParameters({
+                url: getAgentPath({
+                    schema: this.schema,
+                    hostname: this.hostname,
+                    token: token,
+                    path: "/bookings"
+                }),
+                params: {
+                    flightId: flightId,
+                }
+            }), {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token.getToken()}`
+            },
+            body: JSON.stringify({
+                items: items,
+            })
+        });
+
+        if (response.status !== 200) {
+            throw new APIError(
+                "error on put create order",
+                response.status,
+                response.statusText
+            )
+        }
+
+        return true;
+    }
+
 }
 
 export default RestClient;

@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet";
 
 import Sidebar from '../../base/sidebar';
 import NavBar from '../../base/navbar';
+import Modal from "../../base/modal";
 import Notifications from "../../base/notifications";
 import Context from '../../context/app';
 import withRouter from '../../utils/router';
@@ -28,12 +29,6 @@ function FlightOperation(props) {
                     getOutlineBackground(props.notification.type),
                     "bg-gray-50 | shadow hover:shadow-md rounded-md | w-full sm:h-12 | flex flex-col sm:flex-row justify-between items-center | p-2 | cursor-pointer | outline"
                 )}
-                onClick={() => {
-                    this.context.pushLocalNotification({
-                        title: "Flight Operation",
-                        type: props.notification.type
-                    });
-                }}
             >
                 <div className="flex | items-center justify-between sm:justify-start w-full | space-x-4">
                     <div className="flex items-center justify-start">
@@ -64,10 +59,22 @@ function FlightOperation(props) {
                         {
                             props.notification.message
                         }
+                        {
+                            props.notification.extra && props.notification.extra["booking"] ?
+                                <a
+                                    href={`/bookings/${props.notification.extra["booking"]}`}
+                                    className="text-brand-blue underline | ml-2"
+                                >
+                                    {
+                                        props.notification.extra["booking"]
+                                    }
+                                </a> :
+                                null
+                        }
                     </p>
                 </div>
 
-                <div className="mt-3 sm:mt-0 w-full">
+                <div className="mt-3 sm:mt-0 w-1/3">
                     <p className="sm:hidden text-xl text-gray-500">
                         {
                             props.notification.message
@@ -326,6 +333,34 @@ class FlightOperations extends Component {
 
         let requestSuccess = false;
 
+        // TODO: If the status is ARRIVAL and there's no booking associated, then we should ask the user if they want to complete the flight.
+        let canBeCreated = true;
+        if (this.context.agentFlightDetails.status === 'ARRIVAL' && !this.context.agentFlightDetails.has_booking) {
+            await this.context.createModal({
+                data: {
+                    type: 'actiondelete',
+                    title: 'This flight does not have booking created. Are you sure you want to complete this flight?',
+                }
+            })
+                .then(event => {
+                    if (event.proceed && event.proceed === false) {
+                        canBeCreated = false;
+                    }
+                })
+                .catch(() => {
+                    canBeCreated = false;
+                })
+        }
+        if (!canBeCreated) {
+            this.setState({
+                statusLoading: false,
+                statusCompleted: false,
+                statusSuccess: false,
+                statusErrorMessage: null,
+            })
+            return;
+        }
+
         // TODO: Make request using context
         await this.context.updateFlightStatus(this.props.router.params.id)
             .then(() => {
@@ -570,6 +605,7 @@ class FlightStock extends Component {
 
         // TODO: Make request using the API
         let products = this.state.products;
+        let flightId = this.context.agentFlightDetails.flight_id;
 
         // If there are no products, return and show error
         if (Object.keys(products).length === 0) {
@@ -587,7 +623,51 @@ class FlightStock extends Component {
             return;
         }
 
-        
+        let items = Object.keys(products).map((productCode) => {
+            return {
+                product_code: parseInt(productCode),
+                quantity: products[productCode],
+            }
+        })
+
+        // TODO: Modal to confirm booking
+        let canBeCreated = false;
+        await this.context.createModal({
+            data: {
+                type: 'actionplaceorder',
+                items: items,
+                products: this.context.agentFlightProducts ? this.context.agentFlightProducts.products : null
+            }
+        })
+            .then(event => {
+                if (event.proceed && event.proceed === true) {
+                    canBeCreated = true;
+                }
+            })
+            .catch(() => {
+                canBeCreated = false;
+            })
+
+        if (!canBeCreated) {
+            this.setState({
+                bookingLoading: false,
+                bookingCompleted: false,
+                bookingSuccess: false,
+                bookingErrorMessage: null,
+            });
+            return;
+        }
+
+        await this.context.putBookingOrder(flightId, items)
+            .then(() => {
+                requestSuccess = true;
+            })
+            .catch(error => {
+                requestSuccess = false;
+                this.setState({
+                    bookingErrorMessage: error.statusMessage,
+                })
+            })
 
         setTimeout(() => {
 
@@ -598,7 +678,19 @@ class FlightStock extends Component {
             });
 
             // TODO: If success play sound, else send notification
-
+            if (requestSuccess) {
+                let audio = new Audio('/resources/success.mp3');
+                audio.play();
+            } else {
+                // Local notification with error message
+                this.context.pushLocalNotification({
+                    title: 'Error placing order',
+                    message: this.state.statusErrorMessage,
+                    link: null,
+                    extra: null,
+                    type: "ERROR"
+                });
+            }
 
             setTimeout(() => {
 
@@ -609,7 +701,7 @@ class FlightStock extends Component {
                 })
 
                 if (requestSuccess) {
-                    // TODO: Update visual (Details && Operations)
+                    this.props.update();
                 }
 
             }, 3000);
@@ -760,7 +852,7 @@ class Content extends Component {
                 {/* Bottom */}
                 <div className="w-full bg-gray-50 sm:h-1/2 | flex flex-col sm:flex-row | items-center justify-center">
                     <FlightAgents router={this.props.router} />
-                    <FlightStock router={this.props.router} />
+                    <FlightStock router={this.props.router} update={this.props.update} />
                 </div>
 
             </div >
@@ -839,6 +931,7 @@ class Module extends Component {
                 </Helmet>
                 <Sidebar app={this.props.app} config={this.props.config} current={1} />
                 <Notifications app={this.props.app} config={this.props.config} />
+                <Modal />
                 <div className="relative w-full h-full | flex flex-col justify-start items-start">
                     {/* NavBar */}
                     <NavBar app={this.props.app} config={this.props.config} />

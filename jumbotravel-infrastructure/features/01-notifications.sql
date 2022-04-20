@@ -34,5 +34,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     seen                        BOOLEAN NOT NULL DEFAULT 0,
     active                      BOOLEAN NOT NULL DEFAULT 1,
 
-    PRIMARY KEY (notification_id)
+    PRIMARY KEY (notification_id),
+    INDEX resource_id_index (resource_id),
+    INDEX resource_uuid_index (resource_uuid)
 );

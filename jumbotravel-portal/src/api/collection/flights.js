@@ -47,9 +47,11 @@ class FlightsCollection {
     }
 
     getCurrent() {
-        let utcNow = new Date().getTime();        
+        let utcNow = new Date().getTime();
+        let nearestFlight = null;
         // Iterate over all flights and find the one that is currently active
         for (let flight of this.flights) {
+            
             let departureTime = Date.parse(flight.departure_time);
             let arrivalTime = Date.parse(flight.arrival_time);
 
@@ -57,11 +59,16 @@ class FlightsCollection {
             if (utcNow >= departureTime && utcNow <= arrivalTime) {
                 return flight;
             }
+
+            if (utcNow >= departureTime) {
+                nearestFlight = flight;
+            }
+
         }
 
         // If no flight is currently active, return the first flight if it exists
-        if (this.flights.length > 0) {
-            return this.flights[0];
+        if (nearestFlight) {
+            return nearestFlight;
         } else {
             return null;
         }

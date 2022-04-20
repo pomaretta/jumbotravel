@@ -48,6 +48,13 @@ class AppWrapper extends Component {
             agent: null,
 
             // =====================
+            // MODAL
+            // =====================
+            modalShow: false,
+            modalData: null,
+            modalPressed: null,
+
+            // =====================
             // Authentication
             // =====================
             isLoggedIn: false,
@@ -167,6 +174,51 @@ class AppWrapper extends Component {
             token: token
         })
     }
+
+    // ==================
+    // MODAL
+    // ==================
+
+    changeModalState({ show, pressed }) {
+        this.setState({
+            modalShow: show,
+            modalPressed: pressed
+        })
+    }
+
+    createModal({ data }) {
+        let promise = new Promise((resolve, reject) => {
+            // Wait for modal to close
+            let interval = setInterval(() => {
+                if (!this.state.modalPressed) {
+                    return;
+                }
+                if (this.state.modalPressed.status === 'completed') {
+                    clearInterval(interval);
+                    resolve(this.state.modalPressed);
+                } else {
+                    clearInterval(interval);
+                    reject(new Error('Modal is not completed'));
+                }
+            }, 500);
+        });
+        data['callback'] = promise;
+        this.setState({
+            modalShow: true,
+            modalData: data
+        })
+        return promise;
+    }
+
+    closeModal() {
+        this.setState({
+            modalShow: false,
+            modalData: null,
+            modalPressed: null
+        })
+    }
+
+    // ==================
 
     async login({ identifier, password }) {
         let ok, error = await this.api.authorize({
@@ -684,6 +736,14 @@ class AppWrapper extends Component {
         });
     }
 
+    putBookingOrder(flightId, items) {
+        return this.api.putBookingOrder({
+            token: this.state.token,
+            flightId: flightId,
+            items: items
+        })
+    }
+
     render() {
         if (this.hasToLogIn()) {
             return <LoginModule app={this} config={this.props.config} />
@@ -702,6 +762,16 @@ class AppWrapper extends Component {
             clearIntervals: this.clearIntervals.bind(this),
             addInterval: this.addInterval.bind(this),
             removeInterval: this.removeInterval.bind(this),
+
+            // ==================
+            // MODAL
+            // ==================
+            show: this.state.modalShow,
+            pressed: this.state.modalPressed,
+            data: this.state.modalData,
+            changeState: this.changeModalState.bind(this),
+            createModal: this.createModal.bind(this),
+            closeModal: this.closeModal.bind(this),
 
             // =====================
             // AGENT
@@ -762,6 +832,7 @@ class AppWrapper extends Component {
             getAgentBookingDetails: this.getAgentBookingDetails.bind(this),
             getAgentBookingOperations: this.getAgentBookingOperations.bind(this),
             getAgentBookingItems: this.getAgentBookingItems.bind(this),
+            putBookingOrder: this.putBookingOrder.bind(this),
         }}>
             <AppRouter config={this.config} />
         </AppContext.Provider>

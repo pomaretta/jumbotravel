@@ -300,11 +300,14 @@ func BookingCreation(application *application.Application) func(*gin.Context) {
 			return
 		}
 
-		// TODO: Check if the items have legal quantities.
-		var productsToBook []int
-		for _, product := range products {
-			productsToBook = append(productsToBook, *product.ProductCode)
+		// TODO: Check if the status of the flight is legal.
+		if *flight.Status != "FLYING" && *flight.Status != "ARRIVAL" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "flight status is not legal",
+			})
+			return
 		}
+
 		// TODO: Custom fetcher for obtaining product data and current stock by flight.
 		bookedProducts, err := application.FetchAgentFlightProducts(parsedAgentId, parsedFlightId)
 		if err != nil {
@@ -384,8 +387,8 @@ func BookingCreation(application *application.Application) func(*gin.Context) {
 			Scope:            utils.String("BOOKING"),
 			ResourceUuid:     utils.String(referenceId),
 			Title:            utils.String("Booking created"),
-			Message:          utils.String("Booking created successfully"),
-			NotificationType: utils.String("SUCCESS"),
+			Message:          utils.String("Booking created"),
+			NotificationType: utils.String("INFO"),
 			ExpiresAt:        utils.Time(time.Now().Add(time.Hour * 24)),
 		}
 
@@ -394,11 +397,11 @@ func BookingCreation(application *application.Application) func(*gin.Context) {
 			ResourceId:       flight.FlightID,
 			Title:            utils.String("New booking"),
 			Message:          utils.String("Order created with id"),
-			NotificationType: utils.String("SUCCESS"),
+			NotificationType: utils.String("INFO"),
 			ExpiresAt:        utils.Time(time.Now().Add(time.Hour * 24)),
 			Extra: &map[string]string{
 				"agent":   fmt.Sprintf("%s %s", *agent.Name, *agent.Surname),
-				"agentid": string(*agent.AgentID),
+				"agentid": fmt.Sprintf("%d", *agent.AgentID),
 				"booking": referenceId,
 			},
 		}
