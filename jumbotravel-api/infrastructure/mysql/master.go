@@ -66,7 +66,7 @@ func (db *MySQL) FetchMasterAirplanes(airplaneId, flightNumber int, carrier stri
 	return
 }
 
-func (db *MySQL) FetchMasterProducts(productId, productCode int) (s []entity.Product, err error) {
+func (db *MySQL) FetchMasterProducts(productId, productCode []int) (s []entity.Product, err error) {
 
 	qb := &masterbuilders.MasterProductQueryBuilder{}
 	qb.SetProductID(productId)

@@ -123,8 +123,18 @@ class PopupNotification extends Component {
                 {
                     this.getSVG(this.props.type)
                 }
-                <div className="pl-4 text-sm font-normal">
-                    {this.props.title}
+                <div className={classNames(
+                    "pl-4 text-sm font-normal",
+                    this.props.message ? "flex flex-col justify-center items-start" : ""
+                )}>
+                    <span className={classNames(
+                        this.props.message ? "font-bold" : ""
+                    )}>
+                        {this.props.title}
+                    </span>
+                    <span className='text-xs'>
+                        {this.props.message}
+                    </span>
                 </div>
                 <div className="absolute w-full bottom-0 -left-4">
                     <div

@@ -453,7 +453,7 @@ class Module extends Component {
             <div className="w-screen h-screen flex flex-row flex-auto flex-shrink-0 antialiased bg-gray-50 text-gray-800">
                 <Helmet>
                     <title>
-                        Booking - JumboTravel
+                        Booking {String(this.props.router.params.id).substring(0, 8)} - JumboTravel
                     </title>
                 </Helmet>
                 <Sidebar app={this.props.app} config={this.props.config} current={2} />

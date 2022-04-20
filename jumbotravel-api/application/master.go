@@ -17,7 +17,7 @@ func (app *Application) GetMasterAirplanes(airplaneId, flightNumber int, carrier
 	return app.MySQLFetcher.FetchMasterAirplanes(airplaneId, flightNumber, carrier)
 }
 
-func (app *Application) GetMasterProducts(productId, productCode int) ([]entity.Product, error) {
+func (app *Application) GetMasterProducts(productId, productCode []int) ([]entity.Product, error) {
 	return app.MySQLFetcher.FetchMasterProducts(productId, productCode)
 }
 

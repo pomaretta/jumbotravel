@@ -24,7 +24,7 @@ type MySQLFetcher interface {
 	FetchMasterAirports(airpotId int, country, city, airport string) ([]entity.MasterAirport, error)
 	FetchMasterAgents(agentId int, dni, agentType, email string, active bool) ([]entity.Agent, error)
 	FetchMasterAirplanes(airplaneId, flightNumber int, carrier string) ([]entity.Airplane, error)
-	FetchMasterProducts(productId, productCode int) ([]entity.Product, error)
+	FetchMasterProducts(productId, productCode []int) ([]entity.Product, error)
 	FetchNotifications(notificationId, resourceId []int, notificationType, scope []string, seen, active, expired, popup string) ([]entity.Notification, error)
 
 	// Stock
@@ -60,4 +60,5 @@ type MySQLFetcher interface {
 	// Functionalities
 	PutNotification(notifications []dto.NotificationInput) (int64, error)
 	UpdateFlightStatus(flightId int, status string) (int64, error)
+	PutBooking(bookings []dto.BookingInput) (int64, error)
 }

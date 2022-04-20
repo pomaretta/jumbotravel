@@ -3,6 +3,7 @@ package agentbuilders
 import (
 	"fmt"
 
+	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/dto"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/infrastructure/builders"
 )
 
@@ -104,7 +105,7 @@ func (qb *BookingsAggrQueryBuilder) BuildQuery() (string, []interface{}, error) 
 			LEFT JOIN master_agents ma2
 				ON ma2.agent_id = b.provider_id
 		)
-	SELECT 
+	SELECT DISTINCT
 		bd.bookingreferenceid,
 		bd.status,
 		bd.flight_id,
@@ -193,6 +194,59 @@ func (qb *BookingItemsQueryBuilder) BuildQuery() (string, []interface{}, error) 
 	%s
 	%s
 	`, whereClauses, orderClause)
+
+	return query, args, nil
+}
+
+type PutBookingQueryBuilder struct {
+	builders.MySQLQueryBuilder
+
+	bookings []dto.BookingInput
+}
+
+func (qb *PutBookingQueryBuilder) SetBookings(bookings []dto.BookingInput) {
+	qb.bookings = bookings
+}
+
+func (qb *PutBookingQueryBuilder) BuildQuery() (string, []interface{}, error) {
+
+	var values string
+	var args []interface{}
+
+	for idx, booking := range qb.bookings {
+
+		valueQuery, valueArgs, err := booking.Build()
+		if err != nil {
+			return "", nil, err
+		}
+
+		if idx == 0 {
+			values = valueQuery
+		} else {
+			values = fmt.Sprintf("%s, %s", values, valueQuery)
+		}
+
+		args = append(args, valueArgs...)
+	}
+
+	query := fmt.Sprintf(`
+		INSERT INTO bookings (
+			bookingreferenceid,
+			productcode,
+			status,
+			agent_id,
+			agentmapping_id,
+			product_id,
+			productmapping_id,
+			flight_id,
+			items,
+			price,
+			provider_id,
+			providermapping_id,
+			hash64
+		) VALUES
+		%s;
+	`, values)
 
 	return query, args, nil
 }

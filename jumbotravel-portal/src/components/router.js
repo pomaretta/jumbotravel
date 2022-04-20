@@ -73,9 +73,9 @@ class AppRouter extends React.Component {
         // ==================
         this.context.addInterval(setInterval(() => {
             // Validate session
-            this.context.validateSession({
-                token: this.context.token
-            });
+            // this.context.validateSession({
+            //     token: this.context.token
+            // });
         }, 60000));
 
     }

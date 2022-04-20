@@ -2,6 +2,7 @@ package masterbuilders
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/infrastructure/builders"
 )
@@ -9,15 +10,15 @@ import (
 type MasterProductQueryBuilder struct {
 	builders.MySQLQueryBuilder
 
-	ProductID   int
-	ProductCode int
+	ProductID   []int
+	ProductCode []int
 }
 
-func (qb *MasterProductQueryBuilder) SetProductID(productID int) {
+func (qb *MasterProductQueryBuilder) SetProductID(productID []int) {
 	qb.ProductID = productID
 }
 
-func (qb *MasterProductQueryBuilder) SetProductCode(productCode int) {
+func (qb *MasterProductQueryBuilder) SetProductCode(productCode []int) {
 	qb.ProductCode = productCode
 }
 
@@ -26,14 +27,26 @@ func (qb *MasterProductQueryBuilder) buildWhereClause() (string, []interface{}, 
 	partialQuery := "where 1=1"
 	args := []interface{}{}
 
-	if qb.ProductID > -1 {
-		partialQuery = fmt.Sprintf("%s and mp.product_id = ?", partialQuery)
-		args = append(args, qb.ProductID)
+	if len(qb.ProductID) > 0 {
+		partialQuery = fmt.Sprintf("%s and mp.product_id in (", partialQuery)
+		productQuery := ""
+		for _, v := range qb.ProductID {
+			productQuery = fmt.Sprintf("%s,?", productQuery)
+			args = append(args, v)
+		}
+		productQuery = strings.TrimPrefix(productQuery, ",")
+		partialQuery = fmt.Sprintf("%s%s)", partialQuery, productQuery)
 	}
 
-	if qb.ProductCode > -1 {
-		partialQuery = fmt.Sprintf("%s and mp.product_code = ?", partialQuery)
-		args = append(args, qb.ProductCode)
+	if len(qb.ProductCode) > 0 {
+		partialQuery = fmt.Sprintf("%s and mp.product_code in (", partialQuery)
+		productQuery := ""
+		for _, v := range qb.ProductCode {
+			productQuery = fmt.Sprintf("%s,?", productQuery)
+			args = append(args, v)
+		}
+		productQuery = strings.TrimPrefix(productQuery, ",")
+		partialQuery = fmt.Sprintf("%s%s)", partialQuery, productQuery)
 	}
 
 	return partialQuery, args, nil

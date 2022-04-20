@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS bookings (
     updated_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     -- INTEGRITY
-    hash64                  INT NOT NULL,
+    hash64                  BIGINT NOT NULL,
 
     -- CONSTRAINT
     PRIMARY KEY (bookingreferenceid, productcode),

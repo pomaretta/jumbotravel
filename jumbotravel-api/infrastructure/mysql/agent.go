@@ -200,3 +200,11 @@ func (db *MySQL) UpdateFlightStatus(flightId int, status string) (int64, error) 
 
 	return db.Update(qb)
 }
+
+func (db *MySQL) PutBooking(bookings []dto.BookingInput) (int64, error) {
+
+	qb := &agentbuilders.PutBookingQueryBuilder{}
+	qb.SetBookings(bookings)
+
+	return db.Update(qb)
+}

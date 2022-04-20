@@ -1,6 +1,7 @@
 package master
 
 import (
+	"regexp"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -25,25 +26,58 @@ import (
 func Products(application *application.Application) func(*gin.Context) {
 	return func(c *gin.Context) {
 
-		productId := c.DefaultQuery("productid", "-1")
-		parsedProductId, err := strconv.Atoi(productId)
-		if err != nil {
-			c.JSON(400, gin.H{
-				"error": "agentid must be an integer",
-			})
-			return
+		// productId := c.DefaultQuery("productid", "-1")
+		// parsedProductId, err := strconv.Atoi(productId)
+		// if err != nil {
+		// 	c.JSON(400, gin.H{
+		// 		"error": "agentid must be an integer",
+		// 	})
+		// 	return
+		// }
+
+		// productCode := c.DefaultQuery("productcode", "-1")
+		// parsedProductCode, err := strconv.Atoi(productCode)
+		// if err != nil {
+		// 	c.JSON(400, gin.H{
+		// 		"error": "agentid must be an integer",
+		// 	})
+		// 	return
+		// }
+		pattern := regexp.MustCompile("[ ,;\n\t\r]+")
+
+		productId := c.Query("productid")
+		parsedProductsId := make([]int, 0)
+		if productId != "" {
+			productsId := pattern.Split(productId, -1)
+			for _, productId := range productsId {
+				parsedProductId, err := strconv.Atoi(productId)
+				if err != nil {
+					c.JSON(400, gin.H{
+						"error": "productid must be an integer",
+					})
+					return
+				}
+				parsedProductsId = append(parsedProductsId, parsedProductId)
+			}
 		}
 
-		productCode := c.DefaultQuery("productcode", "-1")
-		parsedProductCode, err := strconv.Atoi(productCode)
-		if err != nil {
-			c.JSON(400, gin.H{
-				"error": "agentid must be an integer",
-			})
-			return
+		productCode := c.Query("productcode")
+		parsedProductsCodes := make([]int, 0)
+		if productCode != "" {
+			productsCode := pattern.Split(productCode, -1)
+			for _, productCode := range productsCode {
+				parsedProductCode, err := strconv.Atoi(productCode)
+				if err != nil {
+					c.JSON(400, gin.H{
+						"error": "productid must be an integer",
+					})
+					return
+				}
+				parsedProductsCodes = append(parsedProductsCodes, parsedProductCode)
+			}
 		}
 
-		products, err := application.GetMasterProducts(parsedProductId, parsedProductCode)
+		products, err := application.GetMasterProducts(parsedProductsId, parsedProductsCodes)
 		if err != nil {
 			c.JSON(400, gin.H{
 				"error": err.Error(),

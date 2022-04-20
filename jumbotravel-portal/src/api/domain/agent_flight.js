@@ -22,6 +22,7 @@ class Flight {
         flight_updated,
         updated_at,
         created_at,
+        has_booking,
     }) {
         this.route_id = route_id;
         this.departure_country = departure_country;
@@ -44,6 +45,7 @@ class Flight {
         this.flight_updated = flight_updated;
         this.updated_at = updated_at;
         this.created_at = created_at;
+        this.has_booking = has_booking;
     }
 
     getRoute() {

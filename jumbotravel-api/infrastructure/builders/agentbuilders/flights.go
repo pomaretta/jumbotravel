@@ -102,7 +102,20 @@ func (qb *FlightsQueryBuilder) BuildQuery() (string, []interface{}, error) {
 	orderClause := "order by f.departure_time asc"
 
 	query := fmt.Sprintf(`
-		select
+		with 
+			latest as (
+				SELECT bookingreferenceid, max(created_at) as lt 
+				FROM bookings b GROUP BY 1
+			),
+			details as (
+				SELECT flight_id 
+				FROM bookings b2
+				LEFT JOIN latest la
+					ON la.bookingreferenceid = b2.bookingreferenceid
+				WHERE 1=1
+					AND b2.created_at = la.lt
+			)
+		select distinct
 			fr.route_id,
 			ma.airplane_id,
 			ma.carrier,
@@ -123,7 +136,8 @@ func (qb *FlightsQueryBuilder) BuildQuery() (string, []interface{}, error) {
 			depair.common_name as departure_commonname,
 			arrair.common_name as arrival_commoname,
 			fr.updated_at,
-			fr.created_at
+			fr.created_at,
+			NOT(ISNULL(la.flight_id)) as has_booking
 		from
 			flight_routes fr
 		right join
@@ -141,6 +155,8 @@ func (qb *FlightsQueryBuilder) BuildQuery() (string, []interface{}, error) {
 			on fa.flight_id = f.flight_id
 		left join master_agentmapping ma2 
 			on fa.agentmapping_id = ma2.agentmapping_id
+		left join details la
+			on la.flight_id = f.flight_id
 		%s %s
 	`, whereClause, orderClause)
 
@@ -193,7 +209,7 @@ func (qb *FlightOperationsQueryBuilder) BuildQuery() (string, []interface{}, err
 	if err != nil {
 		return "", nil, err
 	}
-	orderClause := "order by created_at asc"
+	orderClause := "order by created_at desc"
 
 	query := fmt.Sprintf(`
 	SELECT 

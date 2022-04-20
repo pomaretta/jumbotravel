@@ -39,6 +39,7 @@ func (api *API) initAgent() {
 		// Bookings
 		bookingsGroup := agentGroup.Group("/bookings")
 		{
+			bookingsGroup.PUT("", agent.BookingCreation(api.application))
 			bookingsGroup.GET("/status", agent.BookingStatus(api.application))
 			bookingDataGroup := bookingsGroup.Group("/:bookingid")
 			{

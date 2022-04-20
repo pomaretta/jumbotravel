@@ -50,3 +50,7 @@ func (app *Application) GetAgentBookingItems(agentId int, bookingReferenceId str
 func (app *Application) UpdateFlightStatus(flightId int, status string) (int64, error) {
 	return app.MySQLFetcher.UpdateFlightStatus(flightId, status)
 }
+
+func (app *Application) PutBookingCreation(bookings []dto.BookingInput) (int64, error) {
+	return app.MySQLFetcher.PutBooking(bookings)
+}

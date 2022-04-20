@@ -1,11 +1,17 @@
 package agent
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/mitchellh/hashstructure/v2"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/application"
+	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/dto"
+	"github.com/pomaretta/jumbotravel/jumbotravel-api/utils"
 )
 
 // BookingStatus
@@ -203,4 +209,279 @@ func BookingItems(application *application.Application) func(*gin.Context) {
 			"result": result,
 		})
 	}
+}
+
+// BookingCreation
+//
+// @Router /agent/:id/bookings [put]
+// @Tags Agent
+// @Summary Create a new booking.
+//
+// @Security Bearer
+// @Produce json
+//
+// @Param id path int true "Agent ID"
+// @Param flightid query string true "Flight ID"
+//
+// @Success 200 {object} response.JSONResult{result=string} "Get booking reference id."
+// @Failure 400 {object} response.JSONError "Bad request"
+// @Failure 500 {object} response.JSONError "Internal server error"
+func BookingCreation(application *application.Application) func(*gin.Context) {
+	return func(c *gin.Context) {
+
+		agentId := c.Param("id")
+		parsedAgentId, err := strconv.Atoi(agentId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		flightId := c.Query("flightid")
+		parsedFlightId, err := strconv.Atoi(flightId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Flight ID is required",
+			})
+			return
+		}
+
+		// TODO: Check input data from body.
+		var body map[string]interface{}
+		if err := c.ShouldBindJSON(&body); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "json body is required.",
+			})
+			return
+		}
+
+		// TODO: Check if there's a items in the body.
+		items, ok := body["items"].([]interface{})
+		if !ok {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "items are required.",
+			})
+			return
+		}
+		products, err := parseInputItems(items)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		// ====================
+		// TODO: Booking data
+		// ====================
+
+		// TODO: Check if the flights is available for the agent.
+		flights, err := application.FetchAgentFlights(parsedAgentId, 0, parsedFlightId, 0, "", time.Time{}, time.Time{})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		if len(flights) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "flight is not available for the agent",
+			})
+			return
+		}
+		flight := flights[0]
+
+		// TODO: Check if flight has booking created.
+		if *flight.HasBooking {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "flight has booking created",
+			})
+			return
+		}
+
+		// TODO: Check if the items have legal quantities.
+		var productsToBook []int
+		for _, product := range products {
+			productsToBook = append(productsToBook, *product.ProductCode)
+		}
+		// TODO: Custom fetcher for obtaining product data and current stock by flight.
+		bookedProducts, err := application.FetchAgentFlightProducts(parsedAgentId, parsedFlightId)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		parsedBookedProducts, err := parseBookedProducts(products, bookedProducts)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		// TODO: Get agent details
+		agents, err := application.FetchMasterAgents(parsedAgentId, "", "", "", true)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		if len(agents) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "agent is not available",
+			})
+			return
+		}
+		agent := agents[0]
+
+		// ====================
+		// Request
+		// ====================
+
+		// TODO: Generate booking reference id
+		referenceId := uuid.NewString()
+
+		// Generate request inputs
+		var requestInputs []dto.BookingInput
+		// TODO: Fill each product with quantity
+		for _, product := range parsedBookedProducts {
+			input := dto.BookingInput{
+				BookingReferenceId: utils.String(referenceId),
+				ProductCode:        product.ProductCode,
+				Status:             utils.String("PENDING"),
+				AgentId:            agent.AgentID,
+				AgentMappingId:     agent.AgentID,
+				ProductId:          product.ProductID,
+				ProductMappingId:   product.ProductID,
+				FlightId:           flight.FlightID,
+				Items:              product.Quantity,
+				Price:              product.SalePrice,
+			}
+			hash, err := hashstructure.Hash(input, hashstructure.FormatV2, nil)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": err.Error(),
+				})
+				return
+			}
+			input.Hash64 = utils.Int64(int64(hash))
+			requestInputs = append(requestInputs, input)
+		}
+
+		// TODO: Create booking
+		_, err = application.PutBookingCreation(requestInputs)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		bookingNotification := dto.NotificationInput{
+			Scope:            utils.String("BOOKING"),
+			ResourceUuid:     utils.String(referenceId),
+			Title:            utils.String("Booking created"),
+			Message:          utils.String("Booking created successfully"),
+			NotificationType: utils.String("SUCCESS"),
+			ExpiresAt:        utils.Time(time.Now().Add(time.Hour * 24)),
+		}
+
+		flightNotification := dto.NotificationInput{
+			Scope:            utils.String("FLIGHT"),
+			ResourceId:       flight.FlightID,
+			Title:            utils.String("New booking"),
+			Message:          utils.String("Order created with id"),
+			NotificationType: utils.String("SUCCESS"),
+			ExpiresAt:        utils.Time(time.Now().Add(time.Hour * 24)),
+			Extra: &map[string]string{
+				"agent":   fmt.Sprintf("%s %s", *agent.Name, *agent.Surname),
+				"agentid": string(*agent.AgentID),
+				"booking": referenceId,
+			},
+		}
+
+		agentNotification := dto.NotificationInput{
+			Scope:            utils.String("AGENT"),
+			ResourceId:       agent.AgentID,
+			Title:            utils.String("Booking created successfully"),
+			NotificationType: utils.String("SUCCESS"),
+			Link:             utils.String(fmt.Sprintf("/bookings/%s", referenceId)),
+			ExpiresAt:        utils.Time(time.Now().Add(time.Hour * 1)),
+		}
+
+		// TODO: Provider notification
+		notifications := []dto.NotificationInput{
+			bookingNotification,
+			flightNotification,
+			agentNotification,
+		}
+
+		_, err = application.PutNotifications(notifications)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"result": referenceId,
+		})
+	}
+}
+
+func parseInputItems(items []interface{}) ([]dto.BookingItemInput, error) {
+	var result []dto.BookingItemInput
+	// TODO: Check if the items are valid.
+	for _, item := range items {
+		// Parse item as json map
+		itemMap, ok := item.(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("items are required")
+		}
+		// Check if the item has a product_code
+		parsedProductCode, ok := itemMap["product_code"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("product_code is required")
+		}
+		// Check if the item has a quantity
+		parsedProductQuantity, ok := itemMap["quantity"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("quantity is required")
+		}
+		if parsedProductQuantity <= 0 {
+			return nil, fmt.Errorf("quantity must be greater than 0")
+		}
+
+		result = append(result, dto.BookingItemInput{
+			ProductCode: utils.Int(int(parsedProductCode)),
+			Quantity:    utils.Int(int(parsedProductQuantity)),
+		})
+	}
+	return result, nil
+}
+
+func parseBookedProducts(inputProducts []dto.BookingItemInput, booked []dto.FlightProduct) ([]dto.BookingProduct, error) {
+	var result []dto.BookingProduct
+	for _, inputProduct := range inputProducts {
+		for _, bookedProduct := range booked {
+			if *bookedProduct.ProductCode == *inputProduct.ProductCode {
+
+				// // TODO: Check if the quantity is legal.
+				if *bookedProduct.Stock+*inputProduct.Quantity > *bookedProduct.Max {
+					return nil, fmt.Errorf("illegal quantity")
+				}
+
+				result = append(result, dto.BookingProduct{
+					FlightProduct: bookedProduct,
+					Quantity:      inputProduct.Quantity,
+				})
+				break
+			}
+		}
+	}
+	return result, nil
 }

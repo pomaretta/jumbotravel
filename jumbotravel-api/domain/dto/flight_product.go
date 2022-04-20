@@ -33,3 +33,8 @@ func (v *FlightProduct) New() {
 func (v *FlightProduct) Val() interface{} {
 	return *v
 }
+
+type BookingProduct struct {
+	FlightProduct
+	Quantity *int `json:"quantity"`
+}
