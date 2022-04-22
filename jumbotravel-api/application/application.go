@@ -61,6 +61,8 @@ type MySQLFetcher interface {
 	PutNotification(notifications []dto.NotificationInput) (int64, error)
 	UpdateFlightStatus(flightId int, status string) (int64, error)
 	PutBooking(bookings []dto.BookingInput) (int64, error)
+	UpdateBooking(bookingReferenceId, status string, providerId, providerMappingId int) (int64, error)
+	UpdateStock(stock []dto.StockInput) (int64, error)
 
 	// Invoice
 	FetchInvoices(invoiceId, agentId, providerId int, bookingReferenceId string) ([]dto.Invoice, error)

@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -636,4 +637,193 @@ func BookingRequest(application *application.Application) func(*gin.Context) {
 			"message": "booking request sent",
 		})
 	}
+}
+
+// BookingComplete
+//
+// @Router /agent/:id/bookings/:bookingid/complete [post]
+// @Tags Agent
+// @Summary Change booking status to complete
+//
+// @Security Bearer
+// @Produce json
+//
+// @Param id path int true "Agent ID"
+// @Param bookingid path string true "Booking Reference ID"
+//
+// @Success 200 {object} response.JSONResult{result=string} "Successfull request."
+// @Failure 400 {object} response.JSONError "Bad request"
+// @Failure 500 {object} response.JSONError "Internal server error"
+func BookingComplete(app *application.Application) func(*gin.Context) {
+	return func(c *gin.Context) {
+
+		agentId := c.Param("id")
+		parsedAgentId, err := strconv.Atoi(agentId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		bookingReferenceId := c.Param("bookingid")
+		if bookingReferenceId == "" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Booking reference ID is required.",
+			})
+			return
+		}
+
+		agentType := c.GetString("subtype")
+		if agentType != "PROVIDER" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "agent is not a provider",
+			})
+			return
+		}
+
+		// TODO: Get booking airport
+		bookingDetails, err := app.GetAgentBookingDetails(parsedAgentId, agentType, bookingReferenceId)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		if bookingDetails == nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "booking not found",
+			})
+			return
+		}
+
+		if *bookingDetails.Status == "COMPLETED" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "booking already completed",
+			})
+			return
+		}
+
+		flightDetails, err := app.GetAgentFlights(
+			*bookingDetails.AgentId, 0, *bookingDetails.FlightId, 0, "", time.Time{}, time.Time{},
+		)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		if len(flightDetails) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "flight not found",
+			})
+			return
+		}
+		flight := flightDetails[0]
+
+		bookingItems, err := app.GetAgentBookingItems(parsedAgentId, agentType, bookingReferenceId)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		if len(bookingItems) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "booking items not found",
+			})
+			return
+		}
+
+		currentStock, err := app.GetAgentFlightProducts(*bookingDetails.AgentId, *bookingDetails.FlightId)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		parsedStock, err := parseCurrentStockItems(bookingItems, currentStock, *flight.AirplaneID, *flight.AirplaneID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		_, err = app.UpdateStock(parsedStock)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		// TODO: Update booking status
+		_, err = app.UpdateBookingStatus(bookingReferenceId, "COMPLETED", parsedAgentId, parsedAgentId)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		// Mark booking as completed
+		bookingNotification := dto.NotificationInput{
+			Scope:            utils.String("BOOKING"),
+			ResourceUuid:     utils.String(bookingReferenceId),
+			Title:            utils.String("Booking completed, stock updated"),
+			Message:          utils.String("Booking completed, stock updated"),
+			NotificationType: utils.String("SUCCESS"),
+			ExpiresAt:        utils.Time(time.Now().Add(time.Hour * 24)),
+		}
+		agentNotification := dto.NotificationInput{
+			Scope:            utils.String("AGENT"),
+			ResourceId:       bookingDetails.AgentId,
+			Title:            utils.String(fmt.Sprintf("Booking %s completed", bookingReferenceId)),
+			NotificationType: utils.String("SUCCESS"),
+			Link:             utils.String(fmt.Sprintf("/bookings/%s", bookingReferenceId)),
+			ExpiresAt:        utils.Time(time.Now().Add(time.Hour * 1)),
+		}
+
+		_, err = app.PutNotifications([]dto.NotificationInput{bookingNotification, agentNotification})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		// TODO: Register notification for booking complete
+		c.JSON(http.StatusOK, gin.H{
+			"result": "booking completed",
+		})
+	}
+}
+
+func parseCurrentStockItems(inputProducts []dto.BookingItem, current []dto.FlightProduct, airplaneId, airplaneMappingId int) (s []dto.StockInput, err error) {
+	for _, inputProduct := range inputProducts {
+		for _, currentProduct := range current {
+			parsedProductCode, err := strconv.Atoi(*inputProduct.ProductCode)
+			if err != nil {
+				return nil, err
+			}
+			if *currentProduct.ProductCode != parsedProductCode {
+				continue
+			}
+
+			// Check if quantity is legal
+			if *inputProduct.Items+*currentProduct.Stock > *currentProduct.Max {
+				return nil, errors.New("quantity is not legal")
+			}
+
+			s = append(s, dto.StockInput{
+				AirplaneId:        airplaneId,
+				AirplaneMappingId: airplaneMappingId,
+				ProductId:         *currentProduct.ProductID,
+				ProductMappingId:  *currentProduct.ProductID,
+				Stock:             (*inputProduct.Items + *currentProduct.Stock),
+			})
+		}
+	}
+	return
 }

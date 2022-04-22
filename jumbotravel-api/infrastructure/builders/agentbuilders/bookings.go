@@ -300,3 +300,134 @@ func (qb *PutBookingQueryBuilder) BuildQuery() (string, []interface{}, error) {
 
 	return query, args, nil
 }
+
+type UpdateBookingQueryBuilder struct {
+	builders.MySQLQueryBuilder
+
+	bookingReferenceId string
+	status             string
+	providerId         int
+	providerMappingId  int
+}
+
+func (qb *UpdateBookingQueryBuilder) SetBookingReferenceId(bookingReferenceId string) {
+	qb.bookingReferenceId = bookingReferenceId
+}
+
+func (qb *UpdateBookingQueryBuilder) SetStatus(status string) {
+	qb.status = status
+}
+
+func (qb *UpdateBookingQueryBuilder) buildSetClauses() (string, []interface{}, error) {
+
+	partialQuery := "SET"
+	args := []interface{}{}
+
+	if qb.status == "" {
+		return "", nil, fmt.Errorf("status is required")
+	}
+
+	partialQuery = fmt.Sprintf("%s status = ?", partialQuery)
+	args = append(args, qb.status)
+
+	if qb.providerId == 0 {
+		return "", nil, fmt.Errorf("provider id is required")
+	}
+
+	partialQuery = fmt.Sprintf("%s, provider_id = ?", partialQuery)
+	args = append(args, qb.providerId)
+
+	if qb.providerMappingId == 0 {
+		return "", nil, fmt.Errorf("provider mapping id is required")
+	}
+
+	partialQuery = fmt.Sprintf("%s, providermapping_id = ?", partialQuery)
+	args = append(args, qb.providerMappingId)
+
+	return partialQuery, args, nil
+}
+
+func (qb *UpdateBookingQueryBuilder) buildWhereClauses() (string, []interface{}, error) {
+
+	partialQuery := "WHERE 1=1"
+	args := []interface{}{}
+
+	if qb.bookingReferenceId == "" {
+		return "", nil, fmt.Errorf("booking reference id is required")
+	}
+
+	partialQuery = fmt.Sprintf("%s AND bookingreferenceid = ?", partialQuery)
+	args = append(args, qb.bookingReferenceId)
+
+	return partialQuery, args, nil
+}
+
+func (qb *UpdateBookingQueryBuilder) BuildQuery() (string, []interface{}, error) {
+
+	var args []interface{}
+
+	setClauses, setArgs, err := qb.buildSetClauses()
+	if err != nil {
+		return "", nil, err
+	}
+	args = append(args, setArgs...)
+
+	whereClauses, whereArgs, err := qb.buildWhereClauses()
+	if err != nil {
+		return "", nil, err
+	}
+	args = append(args, whereArgs...)
+
+	query := fmt.Sprintf(`
+	UPDATE bookings
+	%s
+	%s
+	`, setClauses, whereClauses)
+
+	return query, args, nil
+}
+
+type UpdateProductStockQueryBuilder struct {
+	builders.MySQLQueryBuilder
+
+	products []dto.StockInput
+}
+
+func (qb *UpdateProductStockQueryBuilder) SetProducts(products []dto.StockInput) {
+	qb.products = products
+}
+
+func (qb *UpdateProductStockQueryBuilder) BuildQuery() (string, []interface{}, error) {
+
+	var values string
+	var args []interface{}
+
+	for idx, product := range qb.products {
+
+		valueQuery, valueArgs, err := product.Build()
+		if err != nil {
+			return "", nil, err
+		}
+
+		if idx == 0 {
+			values = valueQuery
+		} else {
+			values = fmt.Sprintf("%s, %s", values, valueQuery)
+		}
+
+		args = append(args, valueArgs...)
+	}
+
+	query := fmt.Sprintf(`
+		INSERT INTO airplane_stock (
+			airplane_id,
+			airplanemapping_id,
+			product_id,
+			productmapping_id,
+			stock
+		) VALUES
+		%s;
+	`, values)
+
+	return query, args, nil
+}

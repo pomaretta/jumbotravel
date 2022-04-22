@@ -232,3 +232,20 @@ func (db *MySQL) FetchInvoices(invoiceId, agentId, providerId int, bookingRefere
 
 	return
 }
+
+func (db *MySQL) UpdateBooking(bookingReferenceId, status string, providerId, providerMappingId int) (int64, error) {
+
+	qb := &agentbuilders.UpdateBookingQueryBuilder{}
+	qb.SetBookingReferenceId(bookingReferenceId)
+	qb.SetStatus(status)
+
+	return db.Update(qb)
+}
+
+func (db *MySQL) UpdateStock(stock []dto.StockInput) (int64, error) {
+
+	qb := &agentbuilders.UpdateProductStockQueryBuilder{}
+	qb.SetProducts(stock)
+
+	return db.Update(qb)
+}

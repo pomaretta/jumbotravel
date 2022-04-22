@@ -115,13 +115,8 @@ func PutInvoice(app *application.Application) func(*gin.Context) {
 		}
 
 		schema := "https"
-		hostname := "api.jumbotravel.carlospomares.es"
-		if app.Environment == "DEV" {
-			hostname = "api.jumbotravel.dev.carlospomares.es"
-		}
 		if !utils.IsWorker() {
 			schema = "http"
-			hostname = "localhost:3000"
 		}
 
 		invoices, err := app.GetInvoices(0, parsedAgentId, 0, bookingReferenceId)
@@ -139,14 +134,6 @@ func PutInvoice(app *application.Application) func(*gin.Context) {
 				})
 				return
 			}
-			creator := invoice.New(parsedInvoice)
-			res, err := creator.Create()
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"error": err.Error(),
-				})
-				return
-			}
 			signature, err := signInvoice(parsedInvoice)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
@@ -155,7 +142,16 @@ func PutInvoice(app *application.Application) func(*gin.Context) {
 				return
 			}
 			parsedInvoice.Signature = signature
-			parsedInvoice.SignatureUrl = fmt.Sprintf("%s://%s/agent/%d/bookings/%s/invoice?signature=%s", schema, hostname, parsedAgentId, bookingReferenceId, signature)
+			parsedInvoice.SignatureUrl = fmt.Sprintf("%s://%s/agent/%d/bookings/%s/invoice?signature=%s", schema, c.Request.Host, parsedAgentId, bookingReferenceId, signature)
+
+			creator := invoice.New(parsedInvoice)
+			res, err := creator.Create()
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": err.Error(),
+				})
+				return
+			}
 
 			c.Header("Content-Type", "application/pdf")
 			res.Buffer.WriteTo(c.Writer)
@@ -242,7 +238,7 @@ func PutInvoice(app *application.Application) func(*gin.Context) {
 			return
 		}
 		parsedInvoice.Signature = signature
-		parsedInvoice.SignatureUrl = fmt.Sprintf("%s://%s/agent/%d/bookings/%s/invoice?signature=%s", schema, hostname, parsedAgentId, bookingReferenceId, signature)
+		parsedInvoice.SignatureUrl = fmt.Sprintf("%s://%s/agent/%d/bookings/%s/invoice?signature=%s", schema, c.Request.Host, parsedAgentId, bookingReferenceId, signature)
 
 		c.Redirect(http.StatusFound, parsedInvoice.SignatureUrl)
 	}

@@ -13,9 +13,10 @@ import (
 
 var (
 	publicResources = []string{
-		"\\/public\\/.*",
-		"\\/swagger.*",
-		"\\/auth\\/login",
+		"*\\/public\\/.*",
+		"*\\/swagger.*",
+		"*\\/auth\\/login",
+		"GET\\/agent/*/bookings/*/invoice",
 	}
 )
 
@@ -31,7 +32,7 @@ func AuthenticationMiddleware(application *application.Application) gin.HandlerF
 		endpoint := c.Request.URL.Path
 
 		// Check if the endpoint is public or not
-		if IsPublic(endpoint) {
+		if IsPublic(method, endpoint) {
 			c.Next()
 			return
 		}
@@ -105,9 +106,25 @@ func AuthenticationMiddleware(application *application.Application) gin.HandlerF
 	}
 }
 
-func IsPublic(endpoint string) bool {
+func IsPublic(method, endpoint string) bool {
+
 	for _, resource := range publicResources {
-		if matched, _ := regexp.MatchString(resource, endpoint); matched {
+
+		resource = strings.ReplaceAll(resource, "\\/", "/")
+
+		resourceMethod := strings.SplitN(resource, "/", 2)[0]
+		resourceEndpoint := strings.SplitN(resource, "/", 2)[1]
+
+		resourceEndpoint = strings.ReplaceAll("/"+resourceEndpoint, "/", "\\/")
+		resourceMethod = strings.ReplaceAll(resourceMethod, "*", ".*")
+		resourceEndpoint = strings.ReplaceAll(resourceEndpoint, "*", ".*")
+
+		methodExpression := regexp.MustCompile(resourceMethod)
+		if !methodExpression.MatchString(method) {
+			continue
+		}
+		resourceExpression := regexp.MustCompile(resourceEndpoint)
+		if resourceExpression.MatchString(endpoint) {
 			return true
 		}
 	}

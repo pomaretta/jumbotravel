@@ -54,3 +54,11 @@ func (app *Application) UpdateFlightStatus(flightId int, status string) (int64, 
 func (app *Application) PutBookingCreation(bookings []dto.BookingInput) (int64, error) {
 	return app.MySQLFetcher.PutBooking(bookings)
 }
+
+func (app *Application) UpdateBookingStatus(bookingReferenceId string, status string, providerId, providerMappingId int) (int64, error) {
+	return app.MySQLFetcher.UpdateBooking(bookingReferenceId, status, providerId, providerMappingId)
+}
+
+func (app *Application) UpdateStockStatus(stock []dto.StockInput) (int64, error) {
+	return app.MySQLFetcher.UpdateStock(stock)
+}
