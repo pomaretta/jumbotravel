@@ -41,6 +41,7 @@ func BookingStatus(application *application.Application) func(*gin.Context) {
 			return
 		}
 
+		agentType := c.GetString("subtype")
 		flightId := c.DefaultQuery("flightid", "0")
 		parsedFlightId, err := strconv.Atoi(flightId)
 		if err != nil {
@@ -50,7 +51,7 @@ func BookingStatus(application *application.Application) func(*gin.Context) {
 			return
 		}
 
-		result, err := application.GetAgentBookingsAggregate(parsedAgentId, parsedFlightId)
+		result, err := application.GetAgentBookingsAggregate(parsedAgentId, agentType, parsedFlightId)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
@@ -91,6 +92,7 @@ func BookingDetails(application *application.Application) func(*gin.Context) {
 			return
 		}
 
+		agentType := c.GetString("subtype")
 		bookingReferenceId := c.Param("bookingid")
 		if bookingReferenceId == "" {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -99,7 +101,7 @@ func BookingDetails(application *application.Application) func(*gin.Context) {
 			return
 		}
 
-		result, err := application.GetAgentBookingDetails(parsedAgentId, bookingReferenceId)
+		result, err := application.GetAgentBookingDetails(parsedAgentId, agentType, bookingReferenceId)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": err.Error(),
@@ -189,6 +191,7 @@ func BookingItems(application *application.Application) func(*gin.Context) {
 			return
 		}
 
+		agentType := c.GetString("subtype")
 		bookingReferenceId := c.Param("bookingid")
 		if bookingReferenceId == "" {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -197,7 +200,7 @@ func BookingItems(application *application.Application) func(*gin.Context) {
 			return
 		}
 
-		result, err := application.GetAgentBookingItems(parsedAgentId, bookingReferenceId)
+		result, err := application.GetAgentBookingItems(parsedAgentId, agentType, bookingReferenceId)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
@@ -487,4 +490,150 @@ func parseBookedProducts(inputProducts []dto.BookingItemInput, booked []dto.Flig
 		}
 	}
 	return result, nil
+}
+
+// BookingRequest
+//
+// @Router /agent/:id/bookings/:bookingid/request [post]
+// @Tags Agent
+// @Summary Request review of booking.
+//
+// @Security Bearer
+// @Produce json
+//
+// @Param id path int true "Agent ID"
+// @Param bookingid path string true "Booking Reference ID"
+//
+// @Success 200 {object} response.JSONResult{result=string} "Successfull request."
+// @Failure 400 {object} response.JSONError "Bad request"
+// @Failure 500 {object} response.JSONError "Internal server error"
+func BookingRequest(application *application.Application) func(*gin.Context) {
+	return func(c *gin.Context) {
+
+		agentId := c.Param("id")
+		parsedAgentId, err := strconv.Atoi(agentId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		bookingReferenceId := c.Param("bookingid")
+		if bookingReferenceId == "" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Booking reference ID is required.",
+			})
+			return
+		}
+
+		agentType := c.GetString("subtype")
+		if agentType != "ASSISTANT" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "agent is not an assistant",
+			})
+			return
+		}
+
+		// TODO: Get booking airport
+		bookingDetails, err := application.GetAgentBookingDetails(parsedAgentId, agentType, bookingReferenceId)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		// TODO: Get flight details
+		flightDetails, err := application.GetAgentFlights(
+			parsedAgentId, 0, *bookingDetails.FlightId, 0, "", time.Time{}, time.Time{},
+		)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		if len(flightDetails) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "flight not found",
+			})
+			return
+		}
+		flight := flightDetails[0]
+		// TODO: Check if the flight has booking
+		if !*flight.HasBooking {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "flight has no booking",
+			})
+			return
+		}
+
+		airports, err := application.GetMasterAirports(
+			0, *flight.ArrivalCountry, *flight.ArrivalCity, *flight.ArrivalAirport,
+		)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		if len(airports) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "arrival airport not found",
+			})
+			return
+		}
+		airport := airports[0]
+
+		notificationId := []int{*airport.AirportID}
+		notificationUuid := []string{*bookingDetails.BookingReferenceId}
+		notificationScope := []string{"AIRPORT"}
+		// TODO: Check if there's a current notification for the request
+		notifications, err := application.GetNotifications(
+			nil, notificationId, notificationUuid, nil, notificationScope, "0", "0", "0", "0",
+		)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		if len(notifications) > 0 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "There's a notification for this request",
+			})
+			return
+		}
+
+		notification := dto.NotificationInput{
+			Scope:            utils.String("AIRPORT"),
+			ResourceId:       airport.AirportID,
+			ResourceUuid:     bookingDetails.BookingReferenceId,
+			Title:            utils.String(fmt.Sprintf("Booking request for %d", *flight.FlightID)),
+			Message:          utils.String(fmt.Sprintf("Booking request for %d", *flight.FlightID)),
+			Link:             utils.String(fmt.Sprintf("/bookings/%s", bookingReferenceId)),
+			NotificationType: utils.String("INFO"),
+			ExpiresAt:        utils.Time(time.Now().UTC().Add(time.Hour * 2)),
+		}
+		bookingNotification := dto.NotificationInput{
+			Scope:            utils.String("BOOKING"),
+			ResourceUuid:     bookingDetails.BookingReferenceId,
+			Title:            utils.String(fmt.Sprintf("Requested review for %s airport providers", *airport.CommonName)),
+			Message:          utils.String(fmt.Sprintf("Requested review for %s airport providers", *airport.CommonName)),
+			NotificationType: utils.String("INFO"),
+			ExpiresAt:        utils.Time(time.Now().UTC().Add(time.Hour * 2)),
+		}
+		_, err = application.PutNotifications([]dto.NotificationInput{notification, bookingNotification})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": "booking request sent",
+		})
+	}
 }

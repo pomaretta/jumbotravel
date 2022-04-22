@@ -69,8 +69,6 @@ func AuthenticationMiddleware(application *application.Application) gin.HandlerF
 			c.Abort()
 			return
 		}
-
-		// If token is not on the BBDD, it is not valid
 		if len(tokens) == 0 {
 			response.Unauthorized(c)
 			c.Abort()
@@ -93,6 +91,10 @@ func AuthenticationMiddleware(application *application.Application) gin.HandlerF
 			if !IsAllowed(method, endpoint, resourceMethod, resourceEndpoint) {
 				continue
 			}
+
+			// Pass metadata to the context
+			c.Set("jtitype", claims.TokenType)
+			c.Set("subtype", claims.SubjectType)
 
 			c.Next()
 			return

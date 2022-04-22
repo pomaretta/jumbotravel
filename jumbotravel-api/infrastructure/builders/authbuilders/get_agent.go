@@ -46,7 +46,8 @@ func (qb *AgentAuthQueryBuilder) BuildQuery() (string, []interface{}, error) {
 		select 
 			map.agentmapping_id,
 			ag.dni,
-			ag.password
+			ag.password,
+			ag.type
 		from master_agentmapping map
 		left join master_agents ag 
 			on map.agent_id = ag.agent_id

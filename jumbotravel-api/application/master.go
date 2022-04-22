@@ -21,8 +21,8 @@ func (app *Application) GetMasterProducts(productId, productCode []int) ([]entit
 	return app.MySQLFetcher.FetchMasterProducts(productId, productCode)
 }
 
-func (app *Application) GetNotifications(notificationId, resourceId []int, notificationType, scope []string, seen, active, expired, popup string) ([]entity.Notification, error) {
-	return app.MySQLFetcher.FetchNotifications(notificationId, resourceId, notificationType, scope, seen, active, expired, popup)
+func (app *Application) GetNotifications(notificationId, resourceId []int, resourceUuid, notificationType, scope []string, seen, active, expired, popup string) ([]entity.Notification, error) {
+	return app.MySQLFetcher.FetchNotifications(notificationId, resourceId, resourceUuid, notificationType, scope, seen, active, expired, popup)
 }
 
 func (app *Application) PutNotifications(notifications []dto.NotificationInput) (int64, error) {

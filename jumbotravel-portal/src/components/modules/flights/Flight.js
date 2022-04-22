@@ -917,6 +917,11 @@ class Module extends Component {
 
     render() {
 
+        // If the user is not assistant, redirect to dashboard
+        if (this.context.agent && this.context.agent.type !== "ASSISTANT") {
+            document.location.href = "/";
+        }
+
         if (this.context.agentFlightDetails && this.context.agentFlightDetails instanceof APIError && this.context.agentFlightDetails.getStatus() === 404) {
             // Redirect to /flights
             document.location.href = '/flights';

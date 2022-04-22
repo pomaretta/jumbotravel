@@ -186,6 +186,12 @@ class Module extends Component {
     }
 
     render() {
+
+        // If the user is not assistant, redirect to dashboard
+        if (this.context.agent && this.context.agent.type !== "ASSISTANT") {
+            document.location.href = "/";
+        }
+
         return (
             <div className="w-screen h-screen flex flex-row flex-auto flex-shrink-0 antialiased bg-gray-50 text-gray-800">
                 <Helmet>

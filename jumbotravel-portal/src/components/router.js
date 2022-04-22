@@ -5,6 +5,9 @@ import {
     Route,
 } from "react-router-dom"
 
+// Dashboard
+import DashboardModule from "./modules/dashboard/Module";
+
 // Flights
 import FlightsModule from './modules/flights/Module';
 import FlightIndividual from './modules/flights/Flight';
@@ -97,7 +100,8 @@ class AppRouter extends React.Component {
 
                     {/* General Routes */}
                     {/* <Route key='login' path='/login' element={<LoginModule app={this.props.app} config={this.props.config} />} /> */}
-                    <Route key='home' path='/' element={<FlightsModule app={this.props.app} config={this.props.config} />} />
+                    <Route key='home' path='/' element={<DashboardModule app={this.props.app} config={this.props.config} />} />
+                    <Route key='dashboard' path='/dashboard' element={<DashboardModule app={this.props.app} config={this.props.config} />} />
 
                     {/* Assistant */}
                     <Route key='flights' path='/flights' element={<FlightsModule app={this.props.app} config={this.props.config} />} />
@@ -114,8 +118,6 @@ class AppRouter extends React.Component {
                         path="/bookings/:id"
                         element={<BookingIndividual />}
                     />
-
-                    <Route key='planes' path='/planes' element={<PlanesModule app={this.props.app} config={this.props.config} />} />
 
                     {/* 404 Not Found */}
                     <Route key='404' path='*' element={<NotFound app={this.props.app} config={this.props.config} />} />

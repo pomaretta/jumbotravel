@@ -20,6 +20,7 @@ import (
 //
 // @Param notificationid query int false "Notification ID"
 // @Param resourceid query int false "Resource ID"
+// @Param resourceuuid query string false "Resource UUID"
 // @Param notificationtype query string false "Notification type"
 // @Param scope query string false "Scope"
 // @Param seen query string false "Seen"
@@ -32,14 +33,6 @@ import (
 func Notifications(application *application.Application) func(*gin.Context) {
 	return func(c *gin.Context) {
 
-		// notificationId := c.DefaultQuery("notificationid", "-1")
-		// parsedNotificationId, err := strconv.Atoi(notificationId)
-		// if err != nil {
-		// 	c.JSON(400, gin.H{
-		// 		"error": "notification id must be an integer",
-		// 	})
-		// 	return
-		// }
 		pattern := regexp.MustCompile("[ ,;\n\t\r]+")
 
 		notificationId := c.Query("notificationid")
@@ -72,6 +65,13 @@ func Notifications(application *application.Application) func(*gin.Context) {
 				}
 				parsedResourceIds = append(parsedResourceIds, parsedResourceId)
 			}
+		}
+
+		resourceUuid := c.Query("resourceuuid")
+		parsedResourceUuids := make([]string, 0)
+		if resourceUuid != "" {
+			resourceUuids := pattern.Split(resourceUuid, -1)
+			parsedResourceUuids = append(parsedResourceUuids, resourceUuids...)
 		}
 
 		notificationType := c.Query("notificationtype")
@@ -123,6 +123,7 @@ func Notifications(application *application.Application) func(*gin.Context) {
 		notifications, err := application.GetNotifications(
 			parsedNotificationsIds,
 			parsedResourceIds,
+			parsedResourceUuids,
 			parsedNotificationTypes,
 			parsedScopes,
 			seen,

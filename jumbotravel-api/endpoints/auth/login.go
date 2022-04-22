@@ -127,6 +127,7 @@ func Login(application *application.Application) func(*gin.Context) {
 				},
 			},
 			*agent.DNI,
+			*agent.AgentType,
 			"user",
 		)
 		if err != nil {

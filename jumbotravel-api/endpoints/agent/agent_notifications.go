@@ -48,6 +48,7 @@ func Notifications(application *application.Application) func(*gin.Context) {
 			})
 			return
 		}
+		agentType := c.GetString("subtype")
 
 		seen := c.DefaultQuery("seen", "2")
 		if seen != "0" && seen != "1" && seen != "2" {
@@ -81,7 +82,7 @@ func Notifications(application *application.Application) func(*gin.Context) {
 			return
 		}
 
-		notifications, err := application.GetAgentNotifications(parsedAgentId, seen, active, expired, popup)
+		notifications, err := application.GetAgentNotifications(parsedAgentId, agentType, seen, active, expired, popup)
 		if err != nil {
 			c.JSON(400, gin.H{
 				"error": err.Error(),

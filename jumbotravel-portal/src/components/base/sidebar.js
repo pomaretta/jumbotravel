@@ -26,6 +26,22 @@ class Sidebar extends Component {
                 <div className="flex-grow">
                     <ul className="flex flex-col py-4 space-y-1 h-full">
                         <li>
+                            <Link to="/dashboard" className={
+                                classNames(
+                                    this.props.current ? this.props.current === 3 ? "border-jt-primary" : "" : "",
+                                    "relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-50 text-gray-600 hover:text-gray-800 border-l-4 border-transparent hover:border-jt-primary pr-6"
+                                )
+                            }>
+                                <span className="inline-flex justify-center items-center ml-4">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path fill="currentColor" d="M13,3V9H21V3M13,21H21V11H13M3,21H11V15H3M3,13H11V3H3V13Z" />
+                                    </svg>
+                                </span>
+                            </Link>
+                        </li>
+                        <li className={classNames(
+                            this.context.agent && this.context.agent.type === "ASSISTANT" ? "" : "hidden",
+                        )}>
                             <Link to="/flights" className={
                                 classNames(
                                     this.props.current ? this.props.current === 1 ? "border-jt-primary" : "" : "",

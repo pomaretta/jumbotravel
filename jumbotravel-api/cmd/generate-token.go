@@ -21,10 +21,11 @@ func (e *endpoints) Set(value string) error {
 }
 
 func main() {
-	var tokenName, tokenType string
+	var tokenName, tokenSubjetType, tokenType string
 	var endpoints endpoints
 
 	flag.StringVar(&tokenName, "tokenName", "", "Token name")
+	flag.StringVar(&tokenSubjetType, "subType", "", "Token subject type")
 	flag.StringVar(&tokenType, "tokenType", "", "Token type (api, user)")
 
 	flag.Var(&endpoints, "endpoint", `Endpoint to generate the token for.
@@ -58,7 +59,7 @@ Structure: [http method]/[endpoint]`)
 		Resources: endpoints,
 	}
 
-	signed, err := signer.Sign(allowPolicy, tokenName, tokenType)
+	signed, err := signer.Sign(allowPolicy, tokenName, tokenSubjetType, tokenType)
 	if err != nil {
 		log.Fatalf("Cannot sign message: %s", err)
 	}

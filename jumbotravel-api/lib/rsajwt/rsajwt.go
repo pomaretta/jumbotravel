@@ -28,7 +28,8 @@ type AllowPolicy struct {
 
 type Claims struct {
 	AllowPolicy
-	TokenType string `json:"type"`
+	TokenType   string `json:"type"`
+	SubjectType string `json:"subtype"`
 
 	jwt.StandardClaims
 }
@@ -189,7 +190,7 @@ func ShorterSignerFromPrivateKey(privateKey io.Reader) (*Signer, error) {
 	}, nil
 }
 
-func (s *Signer) Sign(allowPolicy AllowPolicy, subject string, tokenType string) (JWT, error) {
+func (s *Signer) Sign(allowPolicy AllowPolicy, subject, subjetType, tokenType string) (JWT, error) {
 	now := time.Now().UTC()
 
 	var ttl time.Duration
@@ -205,6 +206,7 @@ func (s *Signer) Sign(allowPolicy AllowPolicy, subject string, tokenType string)
 	claims := Claims{
 		AllowPolicy: allowPolicy,
 		TokenType:   tokenType,
+		SubjectType: subjetType,
 		StandardClaims: jwt.StandardClaims{
 			IssuedAt:  now.Unix(),
 			ExpiresAt: now.Add(ttl).Unix(),

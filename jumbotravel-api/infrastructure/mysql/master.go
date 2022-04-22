@@ -84,11 +84,12 @@ func (db *MySQL) FetchMasterProducts(productId, productCode []int) (s []entity.P
 	return
 }
 
-func (db *MySQL) FetchNotifications(notificationId, resourceId []int, notificationType, scope []string, seen, active, expired, popup string) (s []entity.Notification, err error) {
+func (db *MySQL) FetchNotifications(notificationId, resourceId []int, resourceUuid, notificationType, scope []string, seen, active, expired, popup string) (s []entity.Notification, err error) {
 
 	qb := &masterbuilders.NotificationQueryBuilder{}
 	qb.SetNotificationId(notificationId)
 	qb.SetResourceId(resourceId)
+	qb.SetResourceUuid(resourceUuid)
 	qb.SetNotificationType(notificationType)
 	qb.SetScope(scope)
 	qb.SetSeen(seen)

@@ -5,18 +5,18 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/pomaretta/jumbotravel/jumbotravel-api/utils"
 )
 
 func CorsMiddleware() gin.HandlerFunc {
 
 	// Origins
-	origins := []string{
-		"https://jumbotravel.carlospomares.es",
-	}
-	if !utils.IsWorker() {
-		origins = []string{"*"}
-	}
+	// origins := []string{
+	// 	"https://jumbotravel.carlospomares.es",
+	// }
+	// if !utils.IsWorker() {
+	// 	origins = []string{"*"}
+	// }
+	origins := []string{"*"}
 
 	return cors.New(
 		cors.Config{

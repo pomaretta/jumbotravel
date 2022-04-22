@@ -744,6 +744,13 @@ class AppWrapper extends Component {
         })
     }
 
+    putBookingRequest(bookingReferenceId) {
+        return this.api.putBookingRequest({
+            token: this.state.token,
+            bookingReferenceId: bookingReferenceId
+        })
+    }
+
     render() {
         if (this.hasToLogIn()) {
             return <LoginModule app={this} config={this.props.config} />
@@ -833,6 +840,7 @@ class AppWrapper extends Component {
             getAgentBookingOperations: this.getAgentBookingOperations.bind(this),
             getAgentBookingItems: this.getAgentBookingItems.bind(this),
             putBookingOrder: this.putBookingOrder.bind(this),
+            putBookingRequest: this.putBookingRequest.bind(this),
         }}>
             <AppRouter config={this.config} />
         </AppContext.Provider>

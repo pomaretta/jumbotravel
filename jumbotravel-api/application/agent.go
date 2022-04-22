@@ -7,8 +7,8 @@ import (
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/entity"
 )
 
-func (app *Application) GetAgentNotifications(agentId int, seen, active, expired, popup string) (s []entity.Notification, err error) {
-	return app.MySQLFetcher.FetchAgentNotifications(agentId, seen, active, expired, popup)
+func (app *Application) GetAgentNotifications(agentId int, agentType, seen, active, expired, popup string) (s []entity.Notification, err error) {
+	return app.MySQLFetcher.FetchAgentNotifications(agentId, agentType, seen, active, expired, popup)
 }
 
 func (app *Application) PostUpdateAgentNotifications(notificationIds []int) (int64, error) {
@@ -31,20 +31,20 @@ func (app *Application) GetAgentFlightProducts(agentId, flightId int) ([]dto.Fli
 	return app.MySQLFetcher.FetchAgentFlightProducts(agentId, flightId)
 }
 
-func (app *Application) GetAgentBookingsAggregate(agentId, flightId int) ([]dto.BookingAggregate, error) {
-	return app.MySQLFetcher.FetchAgentBookingsAggregate(agentId, flightId)
+func (app *Application) GetAgentBookingsAggregate(agentId int, agentType string, flightId int) ([]dto.BookingAggregate, error) {
+	return app.MySQLFetcher.FetchAgentBookingsAggregate(agentId, agentType, flightId)
 }
 
-func (app *Application) GetAgentBookingDetails(agentId int, bookingReferenceId string) (*dto.BookingAggregate, error) {
-	return app.MySQLFetcher.FetchAgentBookingDetails(agentId, bookingReferenceId)
+func (app *Application) GetAgentBookingDetails(agentId int, agenType, bookingReferenceId string) (*dto.BookingAggregate, error) {
+	return app.MySQLFetcher.FetchAgentBookingDetails(agentId, agenType, bookingReferenceId)
 }
 
 func (app *Application) GetAgentBookingOperations(agentId int, bookingReferenceId string) ([]entity.Notification, error) {
 	return app.MySQLFetcher.FetchAgentBookingOperations(agentId, bookingReferenceId)
 }
 
-func (app *Application) GetAgentBookingItems(agentId int, bookingReferenceId string) ([]dto.BookingItem, error) {
-	return app.MySQLFetcher.FetchAgentBookingItems(agentId, bookingReferenceId)
+func (app *Application) GetAgentBookingItems(agentId int, agentType, bookingReferenceId string) ([]dto.BookingItem, error) {
+	return app.MySQLFetcher.FetchAgentBookingItems(agentId, agentType, bookingReferenceId)
 }
 
 func (app *Application) UpdateFlightStatus(flightId int, status string) (int64, error) {

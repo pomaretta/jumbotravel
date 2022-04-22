@@ -9,10 +9,11 @@ import (
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/infrastructure/builders/masterbuilders"
 )
 
-func (db *MySQL) FetchAgentNotifications(agentId int, seen, active, expired, popup string) (s []entity.Notification, err error) {
+func (db *MySQL) FetchAgentNotifications(agentId int, agentType, seen, active, expired, popup string) (s []entity.Notification, err error) {
 
 	qb := &agentbuilders.NotificationsQueryBuilder{}
 	qb.SetAgentId(agentId)
+	qb.SetAgenType(agentType)
 	qb.SetSeen(seen)
 	qb.SetActive(active)
 	qb.SetExpired(expired)
@@ -115,11 +116,12 @@ func (db *MySQL) FetchAgentFlightProducts(agentId, flightId int) (s []dto.Flight
 	return
 }
 
-func (db *MySQL) FetchAgentBookingsAggregate(agentId, flightId int) (s []dto.BookingAggregate, err error) {
+func (db *MySQL) FetchAgentBookingsAggregate(agentId int, agentType string, flightId int) (s []dto.BookingAggregate, err error) {
 
 	qb := &agentbuilders.BookingsAggrQueryBuilder{}
 	qb.SetAgentId(agentId)
 	qb.SetFlightId(flightId)
+	qb.SetAgentType(agentType)
 
 	ent, err := db.Fetch(&dto.BookingAggregate{}, qb)
 	if err != nil {
@@ -133,10 +135,11 @@ func (db *MySQL) FetchAgentBookingsAggregate(agentId, flightId int) (s []dto.Boo
 	return
 }
 
-func (db *MySQL) FetchAgentBookingDetails(agentId int, bookingReferenceId string) (*dto.BookingAggregate, error) {
+func (db *MySQL) FetchAgentBookingDetails(agentId int, agentType, bookingReferenceId string) (*dto.BookingAggregate, error) {
 
 	qb := &agentbuilders.BookingsAggrQueryBuilder{}
 	qb.SetAgentId(agentId)
+	qb.SetAgentType(agentType)
 	qb.SetBookingReferenceId(bookingReferenceId)
 
 	ent, err := db.Fetch(&dto.BookingAggregate{}, qb)
@@ -174,10 +177,11 @@ func (db *MySQL) FetchAgentBookingOperations(agentId int, bookingReferenceId str
 	return
 }
 
-func (db *MySQL) FetchAgentBookingItems(agentId int, bookingReferenceId string) (s []dto.BookingItem, err error) {
+func (db *MySQL) FetchAgentBookingItems(agentId int, agentType, bookingReferenceId string) (s []dto.BookingItem, err error) {
 
 	qb := &agentbuilders.BookingItemsQueryBuilder{}
 	qb.SetAgentId(agentId)
+	qb.SetAgentType(agentType)
 	qb.SetBookingReferenceId(bookingReferenceId)
 
 	ent, err := db.Fetch(&dto.BookingItem{}, qb)

@@ -36,7 +36,7 @@ func (qb *MasterAirportQueryBuilder) buildWhereClause() (string, []interface{}, 
 	partialQuery := "where 1=1"
 	args := []interface{}{}
 
-	if qb.AirportID > -1 {
+	if qb.AirportID > 0 {
 		partialQuery = fmt.Sprintf("%s and airport_id = ?", partialQuery)
 		args = append(args, qb.AirportID)
 	}

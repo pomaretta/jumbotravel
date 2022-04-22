@@ -25,7 +25,7 @@ type MySQLFetcher interface {
 	FetchMasterAgents(agentId int, dni, agentType, email string, active bool) ([]entity.Agent, error)
 	FetchMasterAirplanes(airplaneId, flightNumber int, carrier string) ([]entity.Airplane, error)
 	FetchMasterProducts(productId, productCode []int) ([]entity.Product, error)
-	FetchNotifications(notificationId, resourceId []int, notificationType, scope []string, seen, active, expired, popup string) ([]entity.Notification, error)
+	FetchNotifications(notificationId, resourceId []int, resourceUuid, notificationType, scope []string, seen, active, expired, popup string) ([]entity.Notification, error)
 
 	// Stock
 	FetchStock(stockId, airplaneId, productId, productCode int) ([]dto.Stock, error)
@@ -42,7 +42,7 @@ type MySQLFetcher interface {
 	PutAccessLogging(requestId, tokenId, tokenName, ip, method, path, query, errorMessage string, status int) error
 
 	// Agent
-	FetchAgentNotifications(agentId int, seen, active, expired, popup string) ([]entity.Notification, error)
+	FetchAgentNotifications(agentId int, agentType, seen, active, expired, popup string) ([]entity.Notification, error)
 	UpdateAgentNotifications(notificationIds []int) (int64, error)
 
 	// Agent Flights
@@ -50,12 +50,12 @@ type MySQLFetcher interface {
 	FetchAgentFlightOperations(agentId, flightId int) ([]entity.Notification, error)
 	FetchAgentFlightAgents(agentId, flightId int) ([]dto.FlightAgent, error)
 	FetchAgentFlightProducts(agentId, flightId int) ([]dto.FlightProduct, error)
-	FetchAgentBookingsAggregate(agentId, flightId int) ([]dto.BookingAggregate, error)
+	FetchAgentBookingsAggregate(agentId int, agentType string, flightId int) ([]dto.BookingAggregate, error)
 
 	// Agent Bookings
-	FetchAgentBookingDetails(agentId int, bookingReferenceId string) (*dto.BookingAggregate, error)
+	FetchAgentBookingDetails(agentId int, agentType, bookingReferenceId string) (*dto.BookingAggregate, error)
 	FetchAgentBookingOperations(agentId int, bookingReferenceId string) ([]entity.Notification, error)
-	FetchAgentBookingItems(agentId int, bookingReferenceId string) ([]dto.BookingItem, error)
+	FetchAgentBookingItems(agentId int, agentType, bookingReferenceId string) ([]dto.BookingItem, error)
 
 	// Functionalities
 	PutNotification(notifications []dto.NotificationInput) (int64, error)

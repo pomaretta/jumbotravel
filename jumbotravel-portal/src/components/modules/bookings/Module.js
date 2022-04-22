@@ -5,6 +5,7 @@ import Sidebar from '../../base/sidebar';
 import NavBar from '../../base/navbar';
 import Notifications from "../../base/notifications";
 import Context from '../../context/app';
+import ClassName from '../../utils/classname';
 
 function Booking(props) {
 
@@ -35,25 +36,34 @@ function Booking(props) {
                 </a>
             </th>
             {/* Flight ID */}
-            <td className="px-6 py-4 | underline | font-bold | text-brand-blue">
+            <td className={ClassName(
+                !props.isProvider ? "underline" : "",
+                "px-6 py-4 | font-bold | text-brand-blue"
+            )}>
                 <a
-                    href={`/flights/${props.booking.flight_id}`}
+                    href={!props.isProvider ? `/flights/${props.booking.flight_id}` : null}
                 >
                     {props.booking.flight_id}
                 </a>
             </td>
             {/* Agent Name */}
-            <td className="px-6 py-4 | underline | font-bold | text-brand-blue">
+            <td className={ClassName(
+                !props.isProvider ? "underline" : "",
+                "px-6 py-4 | font-bold | text-brand-blue"
+            )}>
                 <a
-                    href={`/agents/${props.booking.agent_id}`}
+                    href={!props.isProvider ? `/agents/${props.booking.agent_id}` : null}
                 >
                     {`${props.booking.agent_name} ${props.booking.agent_surname}`}
                 </a>
             </td>
             {/* Provider Name */}
-            <td className="px-6 py-4 | underline | font-bold | text-brand-blue">
+            <td className={ClassName(
+                !props.isProvider ? "underline" : "",
+                "px-6 py-4 | font-bold | text-brand-blue"
+            )}>
                 <a
-                    href={props.booking.provider_id ? `/agents/${props.booking.provider_id}` : null}
+                    href={!props.isProvider ? props.booking.provider_id ? `/agents/${props.booking.provider_id}` : null : null}
                 >
                     {
                         props.booking.provider_id ?
@@ -116,8 +126,11 @@ function MobileBooking(props) {
             <div className="text-2xl space-y-2">
                 <p className="text-brand-blue | font-bold">Flight</p>
                 <a
-                    href={`/flights/${props.booking.flight_id}`}
-                    className="underline | font-bold | text-brand-blue"
+                    href={!props.isProvider ? `/flights/${props.booking.flight_id}` : null}
+                    className={ClassName(
+                        !props.isProvider ? "underline" : "",
+                        "font-bold | text-brand-blue"
+                    )}
                 >
                     {props.booking.flight_id}
                 </a>
@@ -125,8 +138,11 @@ function MobileBooking(props) {
             <div className="text-2xl space-y-2">
                 <p className="text-brand-blue | font-bold">Agent</p>
                 <a
-                    href={`/agents/${props.booking.agent_id}`}
-                    className="underline | font-bold | text-brand-blue"
+                    href={!props.isProvider ? `/agents/${props.booking.agent_id}` : null}
+                    className={ClassName(
+                        !props.isProvider ? "underline" : "",
+                        "font-bold | text-brand-blue"
+                    )}
                 >
                     {`${props.booking.agent_name} ${props.booking.agent_surname}`}
                 </a>
@@ -134,8 +150,11 @@ function MobileBooking(props) {
             <div className="text-2xl space-y-2">
                 <p className="text-brand-blue | font-bold">Provider</p>
                 <a
-                    href={props.booking.provider_id ? `/agents/${props.booking.provider_id}` : null}
-                    className="underline | font-bold | text-brand-blue"
+                    href={!props.isProvider ? props.booking.provider_id ? `/agents/${props.booking.provider_id}` : null : null}
+                    className={ClassName(
+                        !props.isProvider ? "underline" : "",
+                        "font-bold | text-brand-blue"
+                    )}
                 >
                     {
                         props.booking.provider_id ?
@@ -177,6 +196,12 @@ function MobileBooking(props) {
 class BookingsContent extends Component {
 
     render() {
+
+        let isProvider = false;
+        if (this.context.agent && this.context.agent.type === "PROVIDER") {
+            isProvider = true;
+        }
+
         return (
             <div className="w-full | py-4">
                 <div className="flex flex-col | border-b-2 border-jt-primary | mx-4 pb-4">
@@ -227,7 +252,7 @@ class BookingsContent extends Component {
                                     this.context.agentBookingsStatus ?
                                         (
                                             this.context.agentBookingsStatus.bookings.map((booking, index) => {
-                                                return <Booking key={index} booking={booking} />
+                                                return <Booking key={index} booking={booking} isProvider={isProvider} />
                                             })
                                         ) : (
                                             <tr>
@@ -248,7 +273,7 @@ class BookingsContent extends Component {
                             this.context.agentBookingsStatus ?
                                 (
                                     this.context.agentBookingsStatus.bookings.map((booking, index) => {
-                                        return <MobileBooking key={index} booking={booking} />
+                                        return <MobileBooking key={index} booking={booking} isProvider={isProvider} />
                                     })
                                 ) : (
                                     <tr>

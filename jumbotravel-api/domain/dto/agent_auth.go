@@ -1,9 +1,10 @@
 package dto
 
 type AgentAuth struct {
-	AgentId  *int    `json:"agent_id"`
-	DNI      *string `json:"dni"`
-	Password *string `json:"password"`
+	AgentId   *int    `json:"agent_id"`
+	DNI       *string `json:"dni"`
+	Password  *string `json:"password"`
+	AgentType *string `json:"agent_type"`
 } // @name AgentAuth
 
 func (v *AgentAuth) GetDestFields() []interface{} {
@@ -11,6 +12,7 @@ func (v *AgentAuth) GetDestFields() []interface{} {
 		&v.AgentId,
 		&v.DNI,
 		&v.Password,
+		&v.AgentType,
 	}
 }
 

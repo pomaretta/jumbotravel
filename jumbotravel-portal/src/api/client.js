@@ -616,6 +616,32 @@ class RestClient {
         return true;
     }
 
+    async putBookingRequest({ token, bookingReferenceId }) {
+
+        const response = await fetch(
+            getAgentPath({
+                schema: this.schema,
+                hostname: this.hostname,
+                token: token,
+                path: `/bookings/${bookingReferenceId}/request`
+            }), {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token.getToken()}`
+            }
+        });
+
+        if (response.status !== 200) {
+            throw new APIError(
+                "error on post booking request",
+                response.status,
+                response.statusText
+            )
+        }
+
+        return true;
+    }
+
 }
 
 export default RestClient;

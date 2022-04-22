@@ -11,6 +11,7 @@ type BookingsAggrQueryBuilder struct {
 	builders.MySQLQueryBuilder
 
 	agentId            int
+	agentType          string
 	bookingReferenceId string
 	flightId           int
 }
@@ -27,6 +28,10 @@ func (qb *BookingsAggrQueryBuilder) SetBookingReferenceId(bookingReferenceId str
 	qb.bookingReferenceId = bookingReferenceId
 }
 
+func (qb *BookingsAggrQueryBuilder) SetAgentType(agentType string) {
+	qb.agentType = agentType
+}
+
 func (qb *BookingsAggrQueryBuilder) buildWhereClauses() (string, []interface{}, error) {
 	partialQuery := "WHERE 1=1"
 	args := []interface{}{}
@@ -34,7 +39,11 @@ func (qb *BookingsAggrQueryBuilder) buildWhereClauses() (string, []interface{}, 
 	if qb.agentId == 0 {
 		return "", args, fmt.Errorf("agent id is required")
 	}
-	partialQuery = fmt.Sprintf("%s AND bd.agent_id = ?", partialQuery)
+	agentColumn := "bd.agent_id"
+	if qb.agentType == "PROVIDER" {
+		agentColumn = "ma3.agentmapping_id"
+	}
+	partialQuery = fmt.Sprintf("%s AND %s = ?", partialQuery, agentColumn)
 	args = append(args, qb.agentId)
 
 	if qb.flightId != 0 {
@@ -57,6 +66,22 @@ func (qb *BookingsAggrQueryBuilder) BuildQuery() (string, []interface{}, error) 
 	whereClauses, args, err := qb.buildWhereClauses()
 	if err != nil {
 		return "", nil, err
+	}
+
+	providerClauses := ""
+	if qb.agentType == "PROVIDER" {
+		providerClauses = `
+			LEFT JOIN flights f 
+				ON f.flight_id = bd.flight_id
+			LEFT JOIN flight_routes fr 
+				ON fr.route_id = f.route_id
+			LEFT JOIN master_airports ma 
+				ON ma.airport = fr.arrival_airport
+			LEFT JOIN master_agents ma2 
+				ON ma2.airport_id = ma.airport_id
+			LEFT JOIN master_agentmapping ma3 
+				ON ma3.agent_id = ma2.agent_id
+		`
 	}
 
 	orderClause := "ORDER BY bd.created_at DESC"
@@ -123,7 +148,8 @@ func (qb *BookingsAggrQueryBuilder) BuildQuery() (string, []interface{}, error) 
 		ON bl.bookingreferenceid = bd.bookingreferenceid
 	%s
 	%s
-	`, whereClauses, orderClause)
+	%s
+	`, providerClauses, whereClauses, orderClause)
 
 	return query, args, nil
 }
@@ -132,11 +158,16 @@ type BookingItemsQueryBuilder struct {
 	builders.MySQLQueryBuilder
 
 	agentId            int
+	agentType          string
 	bookingReferenceId string
 }
 
 func (qb *BookingItemsQueryBuilder) SetAgentId(agentId int) {
 	qb.agentId = agentId
+}
+
+func (qb *BookingItemsQueryBuilder) SetAgentType(agentType string) {
+	qb.agentType = agentType
 }
 
 func (qb *BookingItemsQueryBuilder) SetBookingReferenceId(bookingReferenceId string) {
@@ -150,7 +181,11 @@ func (qb *BookingItemsQueryBuilder) buildWhereClauses() (string, []interface{}, 
 	if qb.agentId == 0 {
 		return "", nil, fmt.Errorf("agent id is required")
 	}
-	partialQuery = fmt.Sprintf("%s AND fa.agentmapping_id = ?", partialQuery)
+	agentColumn := "fa.agentmapping_id"
+	if qb.agentType == "PROVIDER" {
+		agentColumn = "ma3.agentmapping_id"
+	}
+	partialQuery = fmt.Sprintf("%s AND %s = ?", partialQuery, agentColumn)
 	args = append(args, qb.agentId)
 
 	if qb.bookingReferenceId == "" {
@@ -171,6 +206,19 @@ func (qb *BookingItemsQueryBuilder) BuildQuery() (string, []interface{}, error) 
 
 	orderClause := "ORDER BY b.created_at DESC"
 
+	joinClause := `
+		RIGHT JOIN flight_agents fa 
+			ON fa.flight_id = f.flight_id
+	`
+	if qb.agentType == "PROVIDER" {
+		joinClause = `
+		LEFT JOIN flight_routes fr ON fr.route_id = f.route_id
+		LEFT JOIN master_airports ma ON ma.airport = fr.arrival_airport
+		LEFT JOIN master_agents ma2 ON ma2.airport_id = ma.airport_id
+		LEFT JOIN master_agentmapping ma3 ON ma3.agent_id = ma2.agent_id
+		`
+	}
+
 	query := fmt.Sprintf(`
 	SELECT
 		b.bookingreferenceid,
@@ -187,13 +235,12 @@ func (qb *BookingItemsQueryBuilder) BuildQuery() (string, []interface{}, error) 
 		bookings b
 	LEFT JOIN flights f
 		ON f.flight_id = b.flight_id
-	RIGHT JOIN flight_agents fa 
-		ON fa.flight_id = f.flight_id
+	%s
 	LEFT JOIN master_products mp 
 		ON mp.product_id = b.product_id AND mp.product_code = b.productcode
 	%s
 	%s
-	`, whereClauses, orderClause)
+	`, joinClause, whereClauses, orderClause)
 
 	return query, args, nil
 }
