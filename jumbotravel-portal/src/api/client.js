@@ -642,6 +642,32 @@ class RestClient {
         return true;
     }
 
+    async putInvoice({ token, bookingReferenceId }) {
+
+        const response = await fetch(
+            getAgentPath({
+                schema: this.schema,
+                hostname: this.hostname,
+                token: token,
+                path: `/bookings/${bookingReferenceId}/invoice`
+            }), {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token.getToken()}`
+            }
+        });
+
+        if (response.status !== 200) {
+            throw new APIError(
+                "error on put invoice",
+                response.status,
+                response.statusText
+            )
+        }
+
+        return response.blob();
+    }
+
 }
 
 export default RestClient;

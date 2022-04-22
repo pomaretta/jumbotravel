@@ -81,6 +81,7 @@ const AppContext = React.createContext({
     getAgentBookingItems: () => {},
     putBookingOrder: () => {},
     putBookingRequest: () => {},
+    putInvoice: () => {},
 });
 
 export default AppContext;

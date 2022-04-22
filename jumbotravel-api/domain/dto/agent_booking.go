@@ -18,6 +18,7 @@ type BookingAggregate struct {
 	Items              *int       `json:"items"`
 	Total              *float64   `json:"total"`
 	CreatedAt          *time.Time `json:"created_at"`
+	HasInvoice         *bool      `json:"has_invoice"`
 } // @name BookingAggregate
 
 func (v *BookingAggregate) GetDestFields() []interface{} {
@@ -34,6 +35,7 @@ func (v *BookingAggregate) GetDestFields() []interface{} {
 		&v.Items,
 		&v.Total,
 		&v.CreatedAt,
+		&v.HasInvoice,
 	}
 }
 

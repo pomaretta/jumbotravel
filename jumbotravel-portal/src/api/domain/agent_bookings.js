@@ -45,6 +45,7 @@ class BookingDetails {
 		items,
 		total,
 		created_at,
+        has_invoice,
     }) {
         this.bookingreferenceid = bookingreferenceid;
         this.status = status;
@@ -58,6 +59,7 @@ class BookingDetails {
         this.items = items;
         this.total = total;
         this.created_at = created_at;
+        this.has_invoice = has_invoice;
     }
 
 }

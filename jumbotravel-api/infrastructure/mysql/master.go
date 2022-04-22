@@ -116,3 +116,19 @@ func (db *MySQL) PutNotification(notifications []dto.NotificationInput) (int64, 
 
 	return db.Put(qb)
 }
+
+func (db *MySQL) PutInvoice(invoice dto.InvoiceInput) (int64, error) {
+
+	qb := &masterbuilders.PutInvoiceQueryBuilder{}
+	qb.SetInvoice(invoice)
+
+	return db.Put(qb)
+}
+
+func (db *MySQL) PutInvoiceBookings(invoiceBookings []dto.InvoiceBookingInput) (int64, error) {
+
+	qb := &masterbuilders.PutInvoiceBookingsQueryBuilder{}
+	qb.SetBookings(invoiceBookings)
+
+	return db.Put(qb)
+}

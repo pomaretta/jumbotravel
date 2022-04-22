@@ -142,10 +142,13 @@ func (qb *BookingsAggrQueryBuilder) BuildQuery() (string, []interface{}, error) 
 		bd.provider_surname,
 		bd.items,
 		bd.total,
-		bd.created_at
+		bd.created_at,
+		NOT(ISNULL(ib.invoice_id)) as has_invoice
 	FROM bookingdetail bd
 	LEFT JOIN bookinglatest bl
 		ON bl.bookingreferenceid = bd.bookingreferenceid
+	LEFT JOIN invoice_bookings ib
+		ON ib.bookingreferenceid = bd.bookingreferenceid
 	%s
 	%s
 	%s

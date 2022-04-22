@@ -11,5 +11,6 @@ func (api *API) initMaster() {
 	r.GET("/airplanes", master.Airplanes(api.application))
 	r.GET("/products", master.Products(api.application))
 	r.GET("/notifications", master.Notifications(api.application))
+	r.GET("/invoices", master.Invoices(api.application))
 
 }

@@ -47,6 +47,8 @@ func (api *API) initAgent() {
 				bookingDataGroup.GET("/operations", agent.BookingOperations(api.application))
 				bookingDataGroup.GET("/items", agent.BookingItems(api.application))
 				bookingDataGroup.POST("/request", agent.BookingRequest(api.application))
+				bookingDataGroup.PUT("/invoice", agent.PutInvoice(api.application))
+				bookingDataGroup.GET("/invoice", agent.ObtainPDF(api.application))
 			}
 		}
 
