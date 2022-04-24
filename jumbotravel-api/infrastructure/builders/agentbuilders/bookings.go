@@ -14,6 +14,7 @@ type BookingsAggrQueryBuilder struct {
 	agentType          string
 	bookingReferenceId string
 	flightId           int
+	airplaneId         int
 }
 
 func (qb *BookingsAggrQueryBuilder) SetAgentId(agentId int) {
@@ -30,6 +31,10 @@ func (qb *BookingsAggrQueryBuilder) SetBookingReferenceId(bookingReferenceId str
 
 func (qb *BookingsAggrQueryBuilder) SetAgentType(agentType string) {
 	qb.agentType = agentType
+}
+
+func (qb *BookingsAggrQueryBuilder) SetAirplaneId(airplaneId int) {
+	qb.airplaneId = airplaneId
 }
 
 func (qb *BookingsAggrQueryBuilder) buildWhereClauses() (string, []interface{}, error) {
@@ -49,6 +54,11 @@ func (qb *BookingsAggrQueryBuilder) buildWhereClauses() (string, []interface{}, 
 	if qb.flightId != 0 {
 		partialQuery = fmt.Sprintf("%s AND bd.flight_id = ?", partialQuery)
 		args = append(args, qb.flightId)
+	}
+
+	if qb.airplaneId != 0 {
+		partialQuery = fmt.Sprintf("%s AND bd.airplane_id = ?", partialQuery)
+		args = append(args, qb.airplaneId)
 	}
 
 	if qb.bookingReferenceId != "" {
@@ -121,7 +131,8 @@ func (qb *BookingsAggrQueryBuilder) BuildQuery() (string, []interface{}, error) 
 				ma2.surname as provider_surname,
 				b.created_at,
 				bs.items,
-				ROUND(bs.total, 2) as total
+				ROUND(bs.total, 2) as total,
+				fr2.airplanemapping_id as airplane_id
 			FROM bookings as b
 			LEFT JOIN bookingsummary bs
 				ON b.bookingreferenceid = bs.bookingreferenceid
@@ -129,6 +140,10 @@ func (qb *BookingsAggrQueryBuilder) BuildQuery() (string, []interface{}, error) 
 				ON ma.agent_id = b.agent_id
 			LEFT JOIN master_agents ma2
 				ON ma2.agent_id = b.provider_id
+			LEFT JOIN flights f2 
+				ON f2.flight_id = b.flight_id
+			LEFT JOIN flight_routes fr2
+				ON fr2.route_id = f2.route_id
 		)
 	SELECT DISTINCT
 		bd.bookingreferenceid,
@@ -316,6 +331,14 @@ func (qb *UpdateBookingQueryBuilder) SetBookingReferenceId(bookingReferenceId st
 
 func (qb *UpdateBookingQueryBuilder) SetStatus(status string) {
 	qb.status = status
+}
+
+func (qb *UpdateBookingQueryBuilder) SetProviderId(providerId int) {
+	qb.providerId = providerId
+}
+
+func (qb *UpdateBookingQueryBuilder) SetProviderMappingId(providerMappingId int) {
+	qb.providerMappingId = providerMappingId
 }
 
 func (qb *UpdateBookingQueryBuilder) buildSetClauses() (string, []interface{}, error) {

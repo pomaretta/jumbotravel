@@ -52,7 +52,7 @@ func BookingStatus(application *application.Application) func(*gin.Context) {
 			return
 		}
 
-		result, err := application.GetAgentBookingsAggregate(parsedAgentId, agentType, parsedFlightId)
+		result, err := application.GetAgentBookingsAggregate(parsedAgentId, agentType, parsedFlightId, 0)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
@@ -313,7 +313,7 @@ func BookingCreation(application *application.Application) func(*gin.Context) {
 		}
 
 		// TODO: Custom fetcher for obtaining product data and current stock by flight.
-		bookedProducts, err := application.FetchAgentFlightProducts(parsedAgentId, parsedFlightId)
+		bookedProducts, err := application.GetAgentFlightProducts(parsedAgentId, parsedFlightId)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
@@ -475,19 +475,16 @@ func parseBookedProducts(inputProducts []dto.BookingItemInput, booked []dto.Flig
 	var result []dto.BookingProduct
 	for _, inputProduct := range inputProducts {
 		for _, bookedProduct := range booked {
-			if *bookedProduct.ProductCode == *inputProduct.ProductCode {
-
-				// // TODO: Check if the quantity is legal.
-				if *bookedProduct.Stock+*inputProduct.Quantity > *bookedProduct.Max {
-					return nil, fmt.Errorf("illegal quantity")
-				}
-
-				result = append(result, dto.BookingProduct{
-					FlightProduct: bookedProduct,
-					Quantity:      inputProduct.Quantity,
-				})
-				break
+			if *bookedProduct.ProductCode != *inputProduct.ProductCode {
+				continue
 			}
+			if (*inputProduct.Quantity + *bookedProduct.Stock) > *bookedProduct.Max {
+				return nil, fmt.Errorf("illegal quantity")
+			}
+			result = append(result, dto.BookingProduct{
+				FlightProduct: bookedProduct,
+				Quantity:      inputProduct.Quantity,
+			})
 		}
 	}
 	return result, nil
@@ -721,6 +718,31 @@ func BookingComplete(app *application.Application) func(*gin.Context) {
 		}
 		flight := flightDetails[0]
 
+		// TODO: If flight is not in ARRIVAL
+		if *flight.Status != "ARRIVAL" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "flight is not in ARRIVAL status",
+			})
+			return
+		}
+
+		// TODO: If the airplane of flight has more bookings before this one
+		bookings, err := app.GetAgentBookingsAggregate(parsedAgentId, agentType, 0, *flight.AirplaneID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		for _, booking := range bookings {
+			if *booking.Status == "PENDING" && *booking.BookingReferenceId != *bookingDetails.BookingReferenceId {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"error": "airplane has pending bookings",
+				})
+				return
+			}
+		}
+
 		bookingItems, err := app.GetAgentBookingItems(parsedAgentId, agentType, bookingReferenceId)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
@@ -750,7 +772,7 @@ func BookingComplete(app *application.Application) func(*gin.Context) {
 			return
 		}
 
-		_, err = app.UpdateStock(parsedStock)
+		_, err = app.UpdateStockStatus(parsedStock)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
@@ -784,7 +806,6 @@ func BookingComplete(app *application.Application) func(*gin.Context) {
 			Link:             utils.String(fmt.Sprintf("/bookings/%s", bookingReferenceId)),
 			ExpiresAt:        utils.Time(time.Now().Add(time.Hour * 1)),
 		}
-
 		_, err = app.PutNotifications([]dto.NotificationInput{bookingNotification, agentNotification})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
@@ -793,7 +814,6 @@ func BookingComplete(app *application.Application) func(*gin.Context) {
 			return
 		}
 
-		// TODO: Register notification for booking complete
 		c.JSON(http.StatusOK, gin.H{
 			"result": "booking completed",
 		})
@@ -811,11 +831,9 @@ func parseCurrentStockItems(inputProducts []dto.BookingItem, current []dto.Fligh
 				continue
 			}
 
-			// Check if quantity is legal
 			if *inputProduct.Items+*currentProduct.Stock > *currentProduct.Max {
 				return nil, errors.New("quantity is not legal")
 			}
-
 			s = append(s, dto.StockInput{
 				AirplaneId:        airplaneId,
 				AirplaneMappingId: airplaneMappingId,
@@ -826,4 +844,129 @@ func parseCurrentStockItems(inputProducts []dto.BookingItem, current []dto.Fligh
 		}
 	}
 	return
+}
+
+// BookingCount
+//
+// @Router /agent/:id/bookings/count [get]
+// @Tags Agent
+// @Summary Get agent bookings count.
+//
+// @Security Bearer
+// @Produce json
+//
+// @Param id path int true "Agent ID"
+//
+// @Param days query int false "Days of creation"
+// @Param type query string false "Count Type"
+//
+// @Success 200 {object} response.JSONResult{result=[]dto.BookingCount} "Get booking count by day."
+// @Failure 400 {object} response.JSONError "Bad request"
+// @Failure 500 {object} response.JSONError "Internal server error"
+func BookingCount(application *application.Application) func(*gin.Context) {
+	return func(c *gin.Context) {
+
+		agentId := c.Param("id")
+		parsedAgentId, err := strconv.Atoi(agentId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		agentType := c.GetString("subtype")
+
+		days := c.DefaultQuery("days", "30")
+		parsedDays, err := strconv.Atoi(days)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		if parsedDays != 1 && parsedDays != 7 && parsedDays != 30 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "days must be 1, 7 or 30",
+			})
+			return
+		}
+
+		countType := c.DefaultQuery("type", "CREATION")
+		if countType != "CREATION" && countType != "STATUS" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "type must be creation or status",
+			})
+			return
+		}
+
+		result, err := application.GetAgentBookingCount(parsedAgentId, agentType, countType, 0, 0, parsedDays)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"result": result,
+		})
+	}
+}
+
+// BookingCompositeCount
+//
+// @Router /agent/:id/bookings/composite [get]
+// @Tags Agent
+// @Summary Get agent bookings count.
+//
+// @Security Bearer
+// @Produce json
+//
+// @Param id path int true "Agent ID"
+//
+// @Param days query int false "Days of creation"
+//
+// @Success 200 {object} response.JSONResult{result=[]dto.BookingCompositeCount} "Get booking count by day."
+// @Failure 400 {object} response.JSONError "Bad request"
+// @Failure 500 {object} response.JSONError "Internal server error"
+func BookingCompositeCount(application *application.Application) func(*gin.Context) {
+	return func(c *gin.Context) {
+
+		agentId := c.Param("id")
+		parsedAgentId, err := strconv.Atoi(agentId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		agentType := c.GetString("subtype")
+
+		days := c.DefaultQuery("days", "30")
+		parsedDays, err := strconv.Atoi(days)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		if parsedDays != 1 && parsedDays != 7 && parsedDays != 30 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "days must be 1, 7 or 30",
+			})
+			return
+		}
+
+		result, err := application.GetAgentBookingCompositeCount(parsedAgentId, agentType, 0, 0, parsedDays)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"result": result,
+		})
+	}
 }

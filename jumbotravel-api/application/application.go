@@ -26,6 +26,7 @@ type MySQLFetcher interface {
 	FetchMasterAirplanes(airplaneId, flightNumber int, carrier string) ([]entity.Airplane, error)
 	FetchMasterProducts(productId, productCode []int) ([]entity.Product, error)
 	FetchNotifications(notificationId, resourceId []int, resourceUuid, notificationType, scope []string, seen, active, expired, popup string) ([]entity.Notification, error)
+	FetchMasterFlights(flightId, routeId, airplaneId, agentId, providerId int, status string, departureTime, arrivalTime time.Time) ([]entity.MasterFlight, error)
 
 	// Stock
 	FetchStock(stockId, airplaneId, productId, productCode int) ([]dto.Stock, error)
@@ -50,12 +51,14 @@ type MySQLFetcher interface {
 	FetchAgentFlightOperations(agentId, flightId int) ([]entity.Notification, error)
 	FetchAgentFlightAgents(agentId, flightId int) ([]dto.FlightAgent, error)
 	FetchAgentFlightProducts(agentId, flightId int) ([]dto.FlightProduct, error)
-	FetchAgentBookingsAggregate(agentId int, agentType string, flightId int) ([]dto.BookingAggregate, error)
+	FetchAgentBookingsAggregate(agentId int, agentType string, flightId, airplaneId int) ([]dto.BookingAggregate, error)
 
 	// Agent Bookings
 	FetchAgentBookingDetails(agentId int, agentType, bookingReferenceId string) (*dto.BookingAggregate, error)
 	FetchAgentBookingOperations(agentId int, bookingReferenceId string) ([]entity.Notification, error)
 	FetchAgentBookingItems(agentId int, agentType, bookingReferenceId string) ([]dto.BookingItem, error)
+	FetchAgentBookingCount(agentId int, agentType, countType string, flightId, airplaneId, days int) ([]dto.BookingCount, error)
+	FetchAgentBookingCompositeCount(agentId int, agentType string, flightId, airplaneId, days int) ([]dto.BookingCompositeCount, error)
 
 	// Functionalities
 	PutNotification(notifications []dto.NotificationInput) (int64, error)

@@ -31,6 +31,31 @@ $on-error: #FFFFFF;
     background-color: $primary;
 }
 
+.bg-jt-primary-100 {
+    background-color:  rgb(196, 246, 255);
+}
+
+.bg-jt-primary-200 {
+    background-color:  rgb(158, 237, 255);
+}
+
+.bg-jt-primary-300 {
+    background-color:  rgb(121, 227, 255);
+}
+
+.bg-jt-primary-400 {
+    background-color:  rgb(84, 218, 255);
+}
+
+.bg-jt-primary-500 {
+    background-color:  rgb(47, 209, 255);
+}
+
+.from-jt-primary-200 {
+    --tw-gradient-from: rgb(158, 237, 255);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgb(147 197 253 / 0));
+}
+
 .bg-jt-primary2 {
     background-color: $primary-2;
 }

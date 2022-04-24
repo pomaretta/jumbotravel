@@ -102,7 +102,7 @@ func (qb *FlightProductsQueryBuilder) BuildQuery() (string, []interface{}, error
 			ON ma2.airplane_id = ma.airplane_id
 		LEFT JOIN airplane_stock as2 -- NOTE LAST STATE OF STOCK 
 			ON as2.airplanemapping_id = fr.airplanemapping_id
-		LEFT JOIN airplane_stockmapping as3
+		INNER JOIN airplane_stockmapping as3
 			ON as3.stock_id = as2.stock_id
 		LEFT JOIN master_productmapping mp 
 			ON mp.productmapping_id = as2.productmapping_id 

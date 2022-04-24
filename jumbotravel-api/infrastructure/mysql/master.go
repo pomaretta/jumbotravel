@@ -1,6 +1,8 @@
 package mysql
 
 import (
+	"time"
+
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/dto"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/entity"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/infrastructure/builders/masterbuilders"
@@ -131,4 +133,27 @@ func (db *MySQL) PutInvoiceBookings(invoiceBookings []dto.InvoiceBookingInput) (
 	qb.SetBookings(invoiceBookings)
 
 	return db.Put(qb)
+}
+
+func (db *MySQL) FetchMasterFlights(flightId, routeId, airplaneId, agentId, providerId int, status string, departureTime, arrivalTime time.Time) (s []entity.MasterFlight, err error) {
+	qb := &masterbuilders.MasterFlightsQueryBuilder{}
+	qb.SetFlightId(flightId)
+	qb.SetRouteId(routeId)
+	qb.SetAirplaneId(airplaneId)
+	qb.SetAgentId(agentId)
+	qb.SetProviderId(providerId)
+	qb.SetStatus(status)
+	qb.SetDepartureTime(departureTime)
+	qb.SetArrivalTime(arrivalTime)
+
+	ent, err := db.Fetch(&entity.MasterFlight{}, qb)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, e := range ent {
+		s = append(s, e.(entity.MasterFlight))
+	}
+
+	return
 }

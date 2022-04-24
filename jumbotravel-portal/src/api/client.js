@@ -12,6 +12,7 @@ import FlightsCollection from './collection/flights';
 import FlightAgentsCollection from './collection/flight_agents';
 import FlightProductsCollection from './collection/flight_products';
 import { BookingStatusCollection, BookingItemCollection } from './collection/bookings';
+import { StatCollection, CompositeCollection } from './collection/stats'; 
 
 function requestWithEnvironment({ schema, hostname, path }) {
     return `${schema}://${hostname}${path}`;
@@ -59,8 +60,9 @@ class RestClient {
         }
         )
         if (response.status !== 200) {
+            let error = await response.json();
             throw new APIError(
-                "error on validation",
+                error && error["error"] ? error["error"] : response.statusText,
                 response.status,
                 response.statusText
             )
@@ -139,8 +141,9 @@ class RestClient {
         });
 
         if (response.status !== 200) {
+            let error = await response.json();
             throw new APIError(
-                "error on getNotifications",
+                error && error["error"] ? error["error"] : response.statusText,
                 response.status,
                 response.statusText
             )
@@ -176,8 +179,9 @@ class RestClient {
         })
 
         if (response.status !== 200) {
+            let error = await response.json();
             throw new APIError(
-                "error on markNotificationAsRead",
+                error && error["error"] ? error["error"] : response.statusText,
                 response.status,
                 response.statusText
             )
@@ -207,8 +211,9 @@ class RestClient {
         )
 
         if (response.status !== 200) {
+            let error = await response.json();
             throw new APIError(
-                "error on getAgentData",
+                error && error["error"] ? error["error"] : response.statusText,
                 response.status,
                 response.statusText
             )
@@ -240,8 +245,9 @@ class RestClient {
         });
 
         if (response.status !== 200) {
+            let error = await response.json();
             throw new APIError(
-                "error on getNotifications",
+                error && error["error"] ? error["error"] : response.statusText,
                 response.status,
                 response.statusText
             )
@@ -278,8 +284,9 @@ class RestClient {
         });
 
         if (response.status !== 200) {
+            let error = await response.json();
             throw new APIError(
-                "error on get flight details",
+                error && error["error"] ? error["error"] : response.statusText,
                 response.status,
                 response.statusText
             )
@@ -319,8 +326,9 @@ class RestClient {
         });
 
         if (response.status !== 200) {
+            let error = await response.json();
             throw new APIError(
-                "error on get flight operations",
+                error && error["error"] ? error["error"] : response.statusText,
                 response.status,
                 response.statusText
             )
@@ -356,8 +364,9 @@ class RestClient {
         });
 
         if (response.status !== 200) {
+            let error = await response.json();
             throw new APIError(
-                "error on get flight agents",
+                error && error["error"] ? error["error"] : response.statusText,
                 response.status,
                 response.statusText
             )
@@ -393,8 +402,9 @@ class RestClient {
         });
 
         if (response.status !== 200) {
+            let error = await response.json();
             throw new APIError(
-                "error on get flight products",
+                error && error["error"] ? error["error"] : response.statusText,
                 response.status,
                 response.statusText
             )
@@ -430,8 +440,9 @@ class RestClient {
         });
 
         if (response.status !== 200) {
+            let error = await response.json();
             throw new APIError(
-                "error on update flight status",
+                error && error["error"] ? error["error"] : response.statusText,
                 response.status,
                 response.statusText
             )
@@ -443,6 +454,87 @@ class RestClient {
     // ================
     // BOOKING
     // ================
+
+    async getAgentBookingStats({ token, days, type }) {
+
+        const response = await fetch(
+            requestWithParameters({
+                url: getAgentPath({
+                    schema: this.schema,
+                    hostname: this.hostname,
+                    token: token,
+                    path: `/bookings/count`
+                }),
+                params: {
+                    "days": days,
+                    "type": type
+                }
+            }), {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token.getToken()}`
+            }
+        });
+
+        if (response.status !== 200) {
+            let error = await response.json();
+            throw new APIError(
+                error && error["error"] ? error["error"] : response.statusText,
+                response.status,
+                response.statusText
+            )
+        }
+
+        // Get response
+        const data = await response.json();
+
+        // Check if data is null
+        if (data["result"] === null) {
+            return new StatCollection([]);
+        }
+
+        return StatCollection.parse(data["result"]);
+    }
+
+    async getAgentBookingComposite({ token, days }) {
+
+        const response = await fetch(
+            requestWithParameters({
+                url: getAgentPath({
+                    schema: this.schema,
+                    hostname: this.hostname,
+                    token: token,
+                    path: `/bookings/composite`
+                }),
+                params: {
+                    "days": days,
+                }
+            }), {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token.getToken()}`
+            }
+        });
+
+        if (response.status !== 200) {
+            let error = await response.json();
+            throw new APIError(
+                error && error["error"] ? error["error"] : response.statusText,
+                response.status,
+                response.statusText
+            )
+        }
+
+        // Get response
+        const data = await response.json();
+
+        // Check if data is null
+        if (data["result"] === null) {
+            return new CompositeCollection([]);
+        }
+
+        return CompositeCollection.parse(data["result"]);
+    }
 
     async getAgentBookingStatus({ token }) {
 
@@ -460,8 +552,9 @@ class RestClient {
         });
 
         if (response.status !== 200) {
+            let error = await response.json();
             throw new APIError(
-                "error on get booking status",
+                error && error["error"] ? error["error"] : response.statusText,
                 response.status,
                 response.statusText
             )
@@ -494,8 +587,9 @@ class RestClient {
         });
 
         if (response.status !== 200) {
+            let error = await response.json();
             throw new APIError(
-                "error on get booking details",
+                error && error["error"] ? error["error"] : response.statusText,
                 response.status,
                 response.statusText
             )
@@ -528,8 +622,9 @@ class RestClient {
         });
 
         if (response.status !== 200) {
+            let error = await response.json();
             throw new APIError(
-                "error on get booking operations",
+                error && error["error"] ? error["error"] : response.statusText,
                 response.status,
                 response.statusText
             )
@@ -562,8 +657,9 @@ class RestClient {
         });
 
         if (response.status !== 200) {
+            let error = await response.json();
             throw new APIError(
-                "error on get booking items",
+                error && error["error"] ? error["error"] : response.statusText,
                 response.status,
                 response.statusText
             )
@@ -606,8 +702,9 @@ class RestClient {
         });
 
         if (response.status !== 200) {
+            let error = await response.json();
             throw new APIError(
-                "error on put create order",
+                error && error["error"] ? error["error"] : response.statusText,
                 response.status,
                 response.statusText
             )
@@ -658,14 +755,44 @@ class RestClient {
         });
 
         if (response.status !== 200) {
+            let error = await response.json();
             throw new APIError(
-                "error on put invoice",
+                error && error["error"] ? error["error"] : response.statusText,
                 response.status,
                 response.statusText
             )
         }
 
         return response.blob();
+    }
+
+    async fillBooking({ token, bookingReferenceId }) {
+
+        const response = await fetch(
+            getAgentPath({
+                schema: this.schema,
+                hostname: this.hostname,
+                token: token,
+                path: `/bookings/${bookingReferenceId}/complete`
+            }), {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token.getToken()}`
+            }
+        });
+
+        console.log(response.statusText);
+
+        if (response.status !== 200) {
+            let error = await response.json();
+            throw new APIError(
+                error && error["error"] ? error["error"] : response.statusText,
+                response.status,
+                response.statusText
+            )
+        }
+
+        return true;
     }
 
 }

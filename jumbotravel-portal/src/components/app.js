@@ -86,6 +86,12 @@ class AppWrapper extends Component {
             agentBookingOperations: null,
             agentBookingItems: null,
 
+            // =====================
+            // Functionality (Dashboard)
+            // =====================
+            agentDashboardPrimaryChart: null,
+            agentDashboardSecondaryChart: null,
+            agentDashboardCompositeChart: null,
         }
     }
 
@@ -250,16 +256,32 @@ class AppWrapper extends Component {
     }
 
     logout() {
-        // sessionStorage.removeItem('auth_token');
+        // Remove cookie
         this.removeCookie('auth_token');
+
+        // Clear Intervals
         this.clearIntervals();
+
+        // Clear States
         this.setState({
+            
             isLoggedIn: false,
             token: null,
             intervals: {},
             notificationsIsOpen: false,
             notifications: [],
-            hasNotifications: false
+            hasNotifications: false,
+
+            agentFlights: null,
+            agentFlightDetails: null,
+            agentFlightOperations: null,
+            agentFlightAgents: null,
+            agentFlightProducts: null,
+
+            agentBookingsStatus: null,
+            agentBookingDetails: null,
+            agentBookingOperations: null,
+            agentBookingItems: null,
         })
     }
 
@@ -758,6 +780,74 @@ class AppWrapper extends Component {
         })
     }
 
+    fillBooking(bookingReferenceId) {
+        return this.api.fillBooking({
+            token: this.state.token,
+            bookingReferenceId: bookingReferenceId
+        })
+    }
+
+    getAgentDashboardPrimaryChart(days) {
+        this.api.getAgentBookingStats({
+            token: this.state.token,
+            type: "CREATION",
+            days: days
+        }).then(response => {
+            this.setState({
+                agentDashboardPrimaryChart: response
+            })
+        }).catch(error => {
+            if (error instanceof APIError) {
+                if (error.getStatus() === 401) {
+                    this.logout();
+                }
+            }
+        });
+    }
+
+    getAgentDashboardSecondaryChart(days) {
+        this.api.getAgentBookingStats({
+            token: this.state.token,
+            type: "STATUS",
+            days: days
+        }).then(response => {
+            this.setState({
+                agentDashboardSecondaryChart: response
+            })
+        }).catch(error => {
+            if (error instanceof APIError) {
+                if (error.getStatus() === 401) {
+                    this.logout();
+                }
+            }
+        });
+    }
+
+    getAgentDashboardCompositeChart(days) {
+        this.api.getAgentBookingComposite({
+            token: this.state.token,
+            days: days
+        }).then(response => {
+            this.setState({
+                agentDashboardCompositeChart: response
+            })
+        }).catch(error => {
+            if (error instanceof APIError) {
+                if (error.getStatus() === 401) {
+                    this.logout();
+                }
+            }
+        });
+    }
+
+    removeDashboardCharts() {
+        this.setState({
+            agentDashboardPrimaryChart: null,
+            agentDashboardSecondaryChart: null,
+            agentDashboardCompositeChart: null
+        })
+    }
+
     render() {
         if (this.hasToLogIn()) {
             return <LoginModule app={this} config={this.props.config} />
@@ -849,6 +939,18 @@ class AppWrapper extends Component {
             putBookingOrder: this.putBookingOrder.bind(this),
             putBookingRequest: this.putBookingRequest.bind(this),
             putInvoice: this.putInvoice.bind(this),
+            fillBooking: this.fillBooking.bind(this),
+
+            // =====================
+            // Functionalities (Dashboard)
+            // =====================
+            agentDashboardPrimaryChart: this.state.agentDashboardPrimaryChart,
+            agentDashboardSecondaryChart: this.state.agentDashboardSecondaryChart,
+            agentDashboardCompositeChart: this.state.agentDashboardCompositeChart,
+            getAgentDashboardPrimaryChart: this.getAgentDashboardPrimaryChart.bind(this),
+            getAgentDashboardSecondaryChart: this.getAgentDashboardSecondaryChart.bind(this),
+            getAgentDashboardCompositeChart: this.getAgentDashboardCompositeChart.bind(this),
+            removeDashboardCharts: this.removeDashboardCharts.bind(this),
         }}>
             <AppRouter config={this.config} />
         </AppContext.Provider>

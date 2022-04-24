@@ -108,7 +108,9 @@ func (qb *FlightsQueryBuilder) BuildQuery() (string, []interface{}, error) {
 				FROM bookings b GROUP BY 1
 			),
 			details as (
-				SELECT flight_id 
+				SELECT 
+					flight_id,
+					b2.status
 				FROM bookings b2
 				LEFT JOIN latest la
 					ON la.bookingreferenceid = b2.bookingreferenceid
@@ -137,7 +139,8 @@ func (qb *FlightsQueryBuilder) BuildQuery() (string, []interface{}, error) {
 			arrair.common_name as arrival_commoname,
 			fr.updated_at,
 			fr.created_at,
-			NOT(ISNULL(la.flight_id)) as has_booking
+			NOT(ISNULL(la.flight_id)) as has_booking,
+			IF(la.status='PENDING', true, false) as has_pending
 		from
 			flight_routes fr
 		right join

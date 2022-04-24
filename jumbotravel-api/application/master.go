@@ -1,6 +1,8 @@
 package application
 
 import (
+	"time"
+
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/dto"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/entity"
 )
@@ -39,4 +41,8 @@ func (app *Application) RegisterInvoice(invoice dto.InvoiceInput) (int64, error)
 
 func (app *Application) RegisterInvoiceBookings(invoiceBookings []dto.InvoiceBookingInput) (int64, error) {
 	return app.MySQLFetcher.PutInvoiceBookings(invoiceBookings)
+}
+
+func (app *Application) GetMasterFlights(flightId, routeId, airplaneId, agentId, providerId int, status string, departureTime, arrivalTime time.Time) ([]entity.MasterFlight, error) {
+	return app.MySQLFetcher.FetchMasterFlights(flightId, routeId, airplaneId, agentId, providerId, status, departureTime, arrivalTime)
 }

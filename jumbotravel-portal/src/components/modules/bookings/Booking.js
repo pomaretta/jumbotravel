@@ -444,6 +444,17 @@ class BookingOperations extends Component {
         })
 
         let requestSuccess = false;
+
+        await this.context.fillBooking(this.props.router.params.id)
+            .then(() => {
+                requestSuccess = true
+            })
+            .catch(error => {
+                requestSuccess = false;
+                this.setState({
+                    fillErrorMessage: error.message,
+                })
+            })
         
         setTimeout(() => {
 
@@ -453,20 +464,19 @@ class BookingOperations extends Component {
                 fillSuccess: requestSuccess,
             });
 
-            // TODO: If success play sound, else send notification
-            // if (requestSuccess) {
-            //     let audio = new Audio('/resources/success.mp3');
-            //     audio.play();
-            // } else {
-            //     // Local notification with error message
-            //     this.context.pushLocalNotification({
-            //         title: 'Error requesting review',
-            //         message: this.state.statusErrorMessage,
-            //         link: null,
-            //         extra: null,
-            //         type: "ERROR"
-            //     });
-            // }
+            if (requestSuccess) {
+                let audio = new Audio('/resources/success.mp3');
+                audio.play();
+            } else {
+                // Local notification with error message
+                this.context.pushLocalNotification({
+                    title: 'Error completing booking',
+                    message: this.state.fillErrorMessage,
+                    link: null,
+                    extra: null,
+                    type: "ERROR"
+                });
+            }
 
             setTimeout(() => {
 
@@ -474,6 +484,7 @@ class BookingOperations extends Component {
                     fillLoading: false,
                     fillCompleted: !this.state.fillSuccess,
                     fillSuccess: false,
+                    fillErrorMessage: null,
                 })
 
                 if (requestSuccess) {
@@ -747,6 +758,10 @@ class Module extends Component {
     constructor(props) {
         super(props);
 
+        this.state = {
+            interval: null
+        };
+
         this.updateDashboard = this.updateDashboard.bind(this);
     }
 
@@ -757,6 +772,23 @@ class Module extends Component {
         this.context.getAgentBookingOperations(this.props.router.params.id);
         // Get items
         this.context.getAgentBookingItems(this.props.router.params.id);
+
+
+        // Set interval
+        this.setState({
+            interval: setInterval(() => {
+                // Get details
+                this.context.getAgentBookingDetails(this.props.router.params.id);
+                // Get operations
+                this.context.getAgentBookingOperations(this.props.router.params.id);
+                // Get items
+                this.context.getAgentBookingItems(this.props.router.params.id);
+            }, 10000)
+        });
+    }
+
+    componentWillUnmount() {
+        clearInterval(this.state.interval);
     }
 
     componentDidUpdate() {
@@ -766,8 +798,12 @@ class Module extends Component {
     }
 
     updateDashboard = async () => {
+        // Get details
+        this.context.getAgentBookingDetails(this.props.router.params.id);
         // Get operations
         this.context.getAgentBookingOperations(this.props.router.params.id);
+        // Get items
+        this.context.getAgentBookingItems(this.props.router.params.id);
     }
 
     render() {

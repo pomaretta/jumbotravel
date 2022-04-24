@@ -25,6 +25,7 @@ type AgentFlight struct {
 	UpdatedAt           *time.Time `json:"updated_at"`
 	CreatedAt           *time.Time `json:"created_at"`
 	HasBooking          *bool      `json:"has_booking"`
+	HasPending          *bool      `json:"has_pending"`
 } // @name AgentFlight
 
 func (v *AgentFlight) GetDestFields() []interface{} {
@@ -51,6 +52,7 @@ func (v *AgentFlight) GetDestFields() []interface{} {
 		&v.UpdatedAt,
 		&v.CreatedAt,
 		&v.HasBooking,
+		&v.HasPending,
 	}
 }
 

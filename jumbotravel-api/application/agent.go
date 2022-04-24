@@ -31,8 +31,8 @@ func (app *Application) GetAgentFlightProducts(agentId, flightId int) ([]dto.Fli
 	return app.MySQLFetcher.FetchAgentFlightProducts(agentId, flightId)
 }
 
-func (app *Application) GetAgentBookingsAggregate(agentId int, agentType string, flightId int) ([]dto.BookingAggregate, error) {
-	return app.MySQLFetcher.FetchAgentBookingsAggregate(agentId, agentType, flightId)
+func (app *Application) GetAgentBookingsAggregate(agentId int, agentType string, flightId, airplaneId int) ([]dto.BookingAggregate, error) {
+	return app.MySQLFetcher.FetchAgentBookingsAggregate(agentId, agentType, flightId, airplaneId)
 }
 
 func (app *Application) GetAgentBookingDetails(agentId int, agenType, bookingReferenceId string) (*dto.BookingAggregate, error) {
@@ -61,4 +61,12 @@ func (app *Application) UpdateBookingStatus(bookingReferenceId string, status st
 
 func (app *Application) UpdateStockStatus(stock []dto.StockInput) (int64, error) {
 	return app.MySQLFetcher.UpdateStock(stock)
+}
+
+func (app *Application) GetAgentBookingCount(agentId int, agentType, countType string, flightId, airplaneId, days int) ([]dto.BookingCount, error) {
+	return app.MySQLFetcher.FetchAgentBookingCount(agentId, agentType, countType, flightId, airplaneId, days)
+}
+
+func (app *Application) GetAgentBookingCompositeCount(agentId int, agentType string, flightId, airplaneId, days int) ([]dto.BookingCompositeCount, error) {
+	return app.MySQLFetcher.FetchAgentBookingCompositeCount(agentId, agentType, flightId, airplaneId, days)
 }

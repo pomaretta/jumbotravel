@@ -46,16 +46,16 @@ class AppRouter extends React.Component {
         // ==================
         // 1 SECOND
         // ==================
-        this.context.addInterval(setInterval(() => {
-            // console.log('Interval');
-        }, 1000));
+        // this.context.addInterval(setInterval(() => {
+        //     // console.log('Interval');
+        // }, 1000));
 
         // ==================
         // 5 SECONDS
         // ==================
-        this.context.addInterval(setInterval(() => {
-            // console.log('Interval');
-        }, 5000));
+        // this.context.addInterval(setInterval(() => {
+        //     // console.log('Interval');
+        // }, 5000));
 
         // ==================
         // 15 SECONDS
@@ -67,19 +67,19 @@ class AppRouter extends React.Component {
         // ==================
         // 30 SECONDS
         // ==================
-        this.context.addInterval(setInterval(() => {
-            // console.log('Interval'); 
-        }, 30000));
+        // this.context.addInterval(setInterval(() => {
+        //     // console.log('Interval'); 
+        // }, 30000));
 
         // ==================
         // 1 MINUTE
         // ==================
-        this.context.addInterval(setInterval(() => {
-            // Validate session
-            // this.context.validateSession({
-            //     token: this.context.token
-            // });
-        }, 60000));
+        // this.context.addInterval(setInterval(() => {
+        //     // Validate session
+        //     // this.context.validateSession({
+        //     //     token: this.context.token
+        //     // });
+        // }, 60000));
 
     }
 

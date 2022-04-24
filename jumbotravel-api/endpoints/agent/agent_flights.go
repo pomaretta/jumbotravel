@@ -3,6 +3,7 @@ package agent
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"time"
@@ -342,7 +343,7 @@ func UpdateFlightStatus(application *application.Application) func(*gin.Context)
 			return
 		}
 
-		agents, err := application.FetchMasterAgents(parsedAgentId, "", "", "", true)
+		agents, err := application.GetMasterAgents(parsedAgentId, "", "", "", true)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
@@ -391,7 +392,7 @@ func UpdateFlightStatus(application *application.Application) func(*gin.Context)
 			}
 			if time.Now().UTC().After(*flight.ArrivalTime) {
 				c.JSON(http.StatusBadRequest, gin.H{
-					"error": "now if after flight arrivalTime",
+					"error": "flight arrival time is already passed",
 				})
 				return
 			}
@@ -412,12 +413,100 @@ func UpdateFlightStatus(application *application.Application) func(*gin.Context)
 			}
 		}
 
+		airplaneFlights, err := application.GetMasterFlights(*flight.FlightID, 0, *flight.AirplaneID, 0, 0, "COMPLETED", time.Time{}, time.Time{})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		if len(airplaneFlights) > 0 {
+			fmt.Printf("%+v\n", airplaneFlights)
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "airplane is already in use",
+			})
+			return
+		}
+
+		// TODO: Check if the flitght has pending bookings
+		if nextStatus == "COMPLETED" && *flight.HasPending {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "flight has pending bookings",
+			})
+			return
+		}
+
 		result, err := application.UpdateFlightStatus(parsedFlightId, nextStatus)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
 			})
 			return
+		}
+
+		// If the next status is DEPARTURE, simulate stock decrease
+		if nextStatus == "FLYING" {
+
+			// Obtain the flight products
+			products, err := application.GetAgentFlightProducts(parsedAgentId, parsedFlightId)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": err.Error(),
+				})
+				return
+			}
+
+			// Obtain airplane
+			flights, err := application.GetAgentFlights(parsedAgentId, 0, *flight.FlightID, 0, "", time.Time{}, time.Time{})
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": err.Error(),
+				})
+				return
+			}
+			if len(flights) == 0 {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": "flight not found",
+				})
+				return
+			}
+			flight := flights[0]
+
+			stockInput := make([]dto.StockInput, 0)
+			// Decrease the stock of each product randomly between 10 and 50%
+			for _, product := range products {
+
+				// Random if the product will be decreased or not
+				if rand.Intn(2) == 0 {
+					continue
+				}
+
+				// Random the percentage of decrease
+				percentage := rand.Intn(40) + 10
+				percentage = percentage * -1
+
+				// Decrease the stock
+				newStock := *product.Stock * (100 + percentage) / 100
+				if newStock < 0 {
+					newStock = 0
+				}
+
+				stockInput = append(stockInput, dto.StockInput{
+					AirplaneId:        *flight.AirplaneID,
+					AirplaneMappingId: *flight.AirplaneID,
+					ProductId:         *product.ProductID,
+					ProductMappingId:  *product.ProductID,
+					Stock:             newStock,
+				})
+			}
+
+			_, err = application.UpdateStockStatus(stockInput)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": err.Error(),
+				})
+				return
+			}
 		}
 
 		notification := dto.NotificationInput{

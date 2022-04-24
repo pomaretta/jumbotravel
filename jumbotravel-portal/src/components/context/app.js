@@ -82,6 +82,18 @@ const AppContext = React.createContext({
     putBookingOrder: () => {},
     putBookingRequest: () => {},
     putInvoice: () => {},
+    fillBooking: () => {},
+
+    // =====================
+    // Functionality (Dashboard)
+    // =====================
+    agentDashboardPrimaryChart: null,
+    agentDashboardSecondaryChart: null,
+    agentDashboardCompositeChart: null,
+    getAgentDashboardPrimaryChart: () => {},
+    getAgentDashboardSecondaryChart: () => {},
+    getAgentDashboardCompositeChart: () => {},
+    removeDashboardCharts: () => {},
 });
 
 export default AppContext;

@@ -116,12 +116,13 @@ func (db *MySQL) FetchAgentFlightProducts(agentId, flightId int) (s []dto.Flight
 	return
 }
 
-func (db *MySQL) FetchAgentBookingsAggregate(agentId int, agentType string, flightId int) (s []dto.BookingAggregate, err error) {
+func (db *MySQL) FetchAgentBookingsAggregate(agentId int, agentType string, flightId, airplaneId int) (s []dto.BookingAggregate, err error) {
 
 	qb := &agentbuilders.BookingsAggrQueryBuilder{}
 	qb.SetAgentId(agentId)
 	qb.SetFlightId(flightId)
 	qb.SetAgentType(agentType)
+	qb.SetAirplaneId(airplaneId)
 
 	ent, err := db.Fetch(&dto.BookingAggregate{}, qb)
 	if err != nil {
@@ -146,7 +147,6 @@ func (db *MySQL) FetchAgentBookingDetails(agentId int, agentType, bookingReferen
 	if err != nil {
 		return nil, err
 	}
-	// If no result, return empty struct
 	if len(ent) == 0 {
 		return nil, nil
 	}
@@ -238,6 +238,8 @@ func (db *MySQL) UpdateBooking(bookingReferenceId, status string, providerId, pr
 	qb := &agentbuilders.UpdateBookingQueryBuilder{}
 	qb.SetBookingReferenceId(bookingReferenceId)
 	qb.SetStatus(status)
+	qb.SetProviderId(providerId)
+	qb.SetProviderMappingId(providerMappingId)
 
 	return db.Update(qb)
 }
@@ -247,5 +249,48 @@ func (db *MySQL) UpdateStock(stock []dto.StockInput) (int64, error) {
 	qb := &agentbuilders.UpdateProductStockQueryBuilder{}
 	qb.SetProducts(stock)
 
-	return db.Update(qb)
+	return db.Put(qb)
+}
+
+func (db *MySQL) FetchAgentBookingCount(agentId int, agentType, countType string, flightId, airplaneId, days int) (s []dto.BookingCount, err error) {
+
+	qb := &agentbuilders.BookingCountQueryBuilder{}
+	qb.SetAgentId(agentId)
+	qb.SetAgentType(agentType)
+	qb.SetFlightId(flightId)
+	qb.SetAirplaneId(airplaneId)
+	qb.SetDays(days)
+	qb.SetCountType(countType)
+
+	ent, err := db.Fetch(&dto.BookingCount{}, qb)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, e := range ent {
+		s = append(s, e.(dto.BookingCount))
+	}
+
+	return
+}
+
+func (db *MySQL) FetchAgentBookingCompositeCount(agentId int, agentType string, flightId, airplaneId, days int) (s []dto.BookingCompositeCount, err error) {
+
+	qb := &agentbuilders.BookingCompositeQueryBuilder{}
+	qb.SetAgentId(agentId)
+	qb.SetAgentType(agentType)
+	qb.SetFlightId(flightId)
+	qb.SetAirplaneId(airplaneId)
+	qb.SetDays(days)
+
+	ent, err := db.Fetch(&dto.BookingCompositeCount{}, qb)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, e := range ent {
+		s = append(s, e.(dto.BookingCompositeCount))
+	}
+
+	return
 }
