@@ -22,6 +22,7 @@ FROM ubuntu:20.04 AS run-app
 WORKDIR /var/run/task
 
 COPY --from=build-app /usr/src/app/jumbotravel-api /var/run/task/jumbotravel-api
+COPY assets /var/run/task/assets
 
 # Run binary
 CMD ["/var/run/task/jumbotravel-api", "-c", "/var/run/task/config.conf"]
