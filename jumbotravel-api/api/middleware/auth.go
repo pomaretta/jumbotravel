@@ -63,25 +63,25 @@ func AuthenticationMiddleware(application *application.Application) gin.HandlerF
 			return
 		}
 
-		// TODO: Check if token is active
-		tokens, err := application.GetAuthToken(-1, claims.Id, "2", "2", true)
-		if err != nil {
-			response.Unauthorized(c)
-			c.Abort()
-			return
-		}
-		if len(tokens) == 0 {
-			response.Unauthorized(c)
-			c.Abort()
-			return
-		}
-
-		token := tokens[0]
-		isActive := *token.Active
-		if !isActive {
-			response.Unauthorized(c)
-			c.Abort()
-			return
+		if application.Environment == "PROD" {
+			tokens, err := application.GetAuthToken(-1, claims.Id, "2", "2", true)
+			if err != nil {
+				response.Unauthorized(c)
+				c.Abort()
+				return
+			}
+			if len(tokens) == 0 {
+				response.Unauthorized(c)
+				c.Abort()
+				return
+			}
+			token := tokens[0]
+			isActive := *token.Active
+			if !isActive {
+				response.Unauthorized(c)
+				c.Abort()
+				return
+			}
 		}
 
 		for _, resource := range claims.Resources {
@@ -96,6 +96,10 @@ func AuthenticationMiddleware(application *application.Application) gin.HandlerF
 			// Pass metadata to the context
 			c.Set("jtitype", claims.TokenType)
 			c.Set("subtype", claims.SubjectType)
+
+			if claims.SubjectType == "" && claims.TokenType == "api" {
+				c.Set("subtype", c.Request.Header.Get("x-subtype"))
+			}
 
 			c.Next()
 			return
