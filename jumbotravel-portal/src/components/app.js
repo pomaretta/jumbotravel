@@ -264,13 +264,20 @@ class AppWrapper extends Component {
 
         // Clear States
         this.setState({
-            
+
+            show: false,
+            pressed: null,
+            data: null,
+            agent: null,
+
             isLoggedIn: false,
             token: null,
             intervals: {},
             notificationsIsOpen: false,
             notifications: [],
+            localNotifications: null,
             hasNotifications: false,
+            newNotifications: false,
 
             agentFlights: null,
             agentFlightDetails: null,
@@ -282,6 +289,10 @@ class AppWrapper extends Component {
             agentBookingDetails: null,
             agentBookingOperations: null,
             agentBookingItems: null,
+
+            agentDashboardPrimaryChart: null,
+            agentDashboardSecondaryChart: null,
+            agentDashboardCompositeChart: null,
         })
     }
 

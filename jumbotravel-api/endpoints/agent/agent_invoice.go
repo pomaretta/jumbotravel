@@ -240,9 +240,17 @@ func PutInvoice(app *application.Application) func(*gin.Context) {
 		parsedInvoice.Signature = signature
 		parsedInvoice.SignatureUrl = fmt.Sprintf("%s://%s/agent/%d/bookings/%s/invoice?signature=%s", schema, c.Request.Host, parsedAgentId, bookingReferenceId, signature)
 
-		c.JSON(http.StatusOK, gin.H{
-			"result": "invoice generated",
-		})
+		creator := invoice.New(parsedInvoice)
+		res, err := creator.Create()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		c.Header("Content-Type", "application/pdf")
+		res.Buffer.WriteTo(c.Writer)
 	}
 }
 

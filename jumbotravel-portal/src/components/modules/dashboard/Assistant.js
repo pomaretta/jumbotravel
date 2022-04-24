@@ -22,7 +22,7 @@ class AssistantDashboard extends Component {
                         <progress class="progress progress-info w-56 | animate-in zoom-in-50"></progress>
                     </div>
                     <div className="flex justify-between sm:justify-end items-center | w-full sm:w-1/4">
-                        <p className="text-md font-bold mr-4">Select time range:</p>
+                        <p className="text-md font-bold mr-4">Dashboard Range</p>
                         <select className="select select-md select-info w-1/2 | shadow-lg shadow-blue-100" onChange={(ev) => {
                             this.props.changeSelectedDays(ev.target.value)
                         }}>
