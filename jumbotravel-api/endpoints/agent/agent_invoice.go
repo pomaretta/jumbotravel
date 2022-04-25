@@ -15,6 +15,7 @@ import (
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/application"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/dto"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/lib/invoice"
+	"github.com/pomaretta/jumbotravel/jumbotravel-api/lib/rsajwt"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/utils"
 )
 
@@ -46,7 +47,43 @@ func ObtainPDF(application *application.Application) func(*gin.Context) {
 			return
 		}
 
-		invoices, err := application.GetInvoices(0, parsedAgentId, 0, bookingReferenceId)
+		verifier, err := rsajwt.NewVerifierFromPublicKeyFile("rsa.public")
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		claims, err := verifier.GetVerifiedValue(signature, application.Environment, false)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		parsedInvoiceId, err := strconv.Atoi(claims.Id)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		parsedSignatureAgentId, err := strconv.Atoi(claims.AllowPolicy.Extra["agent"])
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		parsedSignatureProviderId, err := strconv.Atoi(claims.AllowPolicy.Extra["provider"])
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		invoices, err := application.GetInvoices(parsedInvoiceId, parsedSignatureAgentId, parsedSignatureProviderId, bookingReferenceId)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
@@ -280,14 +317,20 @@ func signInvoice(invoice *invoice.Invoice) (string, error) {
 		return "", err
 	}
 	rsaJWT := jwt.SigningMethodRS256
-
-	claims := jwt.MapClaims{
-		"jti":      invoice.Id,
-		"iat":      invoice.Date,
-		"sub":      invoice.Id,
-		"iss":      "jumbotravel",
-		"agent":    invoice.Assistant.Id,
-		"provider": invoice.Provider.Id,
+	claims := &rsajwt.Claims{
+		StandardClaims: jwt.StandardClaims{
+			Id:        fmt.Sprintf("%d", invoice.Id),
+			Subject:   fmt.Sprintf("%d", invoice.Id),
+			ExpiresAt: invoice.Date.Unix(),
+			IssuedAt:  invoice.Date.Unix(),
+			Issuer:    "jumbotravel",
+		},
+		AllowPolicy: rsajwt.AllowPolicy{
+			Extra: map[string]string{
+				"agent":    fmt.Sprintf("%d", invoice.Assistant.Id),
+				"provider": fmt.Sprintf("%d", invoice.Provider.Id),
+			},
+		},
 	}
 
 	token := jwt.NewWithClaims(rsaJWT, claims)

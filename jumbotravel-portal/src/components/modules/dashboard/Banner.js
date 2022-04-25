@@ -8,6 +8,9 @@ function WelcomeBanner(props) {
     if (now.getHours() > 18) {
         nowString = "evening";
     }
+    if (now.getHours() > 22 || (now.getHours() > 0 && now.getHours() < 7)) {
+        nowString = "night";
+    }
 
     return (
         <div className="relative | bg-gradient-to-r from-jt-primary-200 to-blue-200 | p-4 sm:p-6 rounded-md overflow-hidden mb-4 | shadow-lg shadow-blue-100 | animate-in fade-in-50 duration-700">

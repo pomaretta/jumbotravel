@@ -23,7 +23,7 @@ class AssistantDashboard extends Component {
                     </div>
                     <div className="flex justify-between sm:justify-end items-center | w-full sm:w-1/4">
                         <p className="text-md font-bold mr-4">Dashboard Range</p>
-                        <select className="select select-md select-info w-1/2 | shadow-lg shadow-blue-100" onChange={(ev) => {
+                        <select className="select select-md select-info dark:bg-white  w-1/2 | shadow-lg shadow-blue-100" onChange={(ev) => {
                             this.props.changeSelectedDays(ev.target.value)
                         }}>
                             <option selected value={30}>30 Days</option>

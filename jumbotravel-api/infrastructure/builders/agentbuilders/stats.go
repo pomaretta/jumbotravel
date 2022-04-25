@@ -155,7 +155,7 @@ func (qb *BookingCountQueryBuilder) BuildQuery() (string, []interface{}, error) 
 		)
 	SELECT DISTINCT
 		%s
-		COUNT(*) as value
+		COUNT(DISTINCT bd.bookingreferenceid) as value
 	FROM bookingdetail bd
 	LEFT JOIN bookinglatest bl
 		ON bl.bookingreferenceid = bd.bookingreferenceid

@@ -38,7 +38,7 @@ func (qb *InvoiceQueryBuilder) buildWhereClauses() (string, []interface{}, error
 	args := []interface{}{}
 
 	if qb.invoiceId > 0 {
-		partialQuery = fmt.Sprintf("%s AND i.id = ?", partialQuery)
+		partialQuery = fmt.Sprintf("%s AND i.invoice_id = ?", partialQuery)
 		args = append(args, qb.invoiceId)
 	}
 

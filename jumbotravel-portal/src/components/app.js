@@ -265,19 +265,9 @@ class AppWrapper extends Component {
         // Clear States
         this.setState({
 
-            show: false,
-            pressed: null,
-            data: null,
-            agent: null,
-
             isLoggedIn: false,
             token: null,
             intervals: {},
-            notificationsIsOpen: false,
-            notifications: [],
-            localNotifications: null,
-            hasNotifications: false,
-            newNotifications: false,
 
             agentFlights: null,
             agentFlightDetails: null,

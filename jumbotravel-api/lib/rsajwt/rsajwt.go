@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -229,7 +230,7 @@ func (s *Signer) Sign(allowPolicy AllowPolicy, subject, subjetType, tokenType st
 	return jwt, nil
 }
 
-func (v *Verifier) GetVerifiedValue(token string, env string) (Claims, error) {
+func (v *Verifier) GetVerifiedValue(token string, env string, checkExpired bool) (Claims, error) {
 	unixNow := time.Now().UTC().Unix()
 
 	parts := strings.Split(token, ".")
@@ -250,11 +251,14 @@ func (v *Verifier) GetVerifiedValue(token string, env string) (Claims, error) {
 
 	c := Claims{}
 	err = dec.Decode(&c)
+	if err != nil {
+		return Claims{}, fmt.Errorf("failed to decode claims: %s", err)
+	}
 
-	if unixNow > c.ExpiresAt {
+	if unixNow > c.ExpiresAt && checkExpired {
 		return Claims{}, errors.New("Expired Token")
 	}
-	if unixNow < c.IssuedAt {
+	if unixNow < c.IssuedAt && checkExpired {
 		return Claims{}, errors.New("Expired Token")
 	}
 

@@ -56,7 +56,7 @@ func AuthenticationMiddleware(application *application.Application) gin.HandlerF
 		jwtToken := splitToken[1]
 
 		// get token claims and see if has expired
-		claims, err := verifier.GetVerifiedValue(jwtToken, application.Environment)
+		claims, err := verifier.GetVerifiedValue(jwtToken, application.Environment, true)
 		if err != nil {
 			response.Unauthorized(c)
 			c.Abort()

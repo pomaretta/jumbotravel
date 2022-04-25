@@ -12,7 +12,7 @@ class Notifications extends Component {
                 {/* Desktop */}
                 <div className="hidden absolute sm:flex flex-col space-y-4 items-center w-full max-w-xs top-20 right-5 space-x">
                     {
-                        this.context.hasNotifications ?
+                        this.context.hasNotifications && this.context.notifications ?
                             this.context.notifications.getPopup().map((notification, index) => {
                                 return (
                                     <div
@@ -49,7 +49,7 @@ class Notifications extends Component {
                 {/* Mobile */}
                 <div className="fixed sm:hidden w-screen flex flex-col space-y-4 items-center bottom-0 space-x pb-10">
                     {
-                        this.context.hasNotifications ?
+                        this.context.hasNotifications && this.context.notifications ?
                             this.context.notifications.getPopup().map((notification, index) => {
                                 return (
                                     <div

@@ -193,6 +193,34 @@ function MobileBooking(props) {
     );
 }
 
+class BookingReport extends Component {
+
+    render() {
+        return (
+            <div className="w-full | flex flex-col sm:flex-row justify-between items-center | mb-4 | py-3">
+                <div className={ClassName(
+                    "flex | justify-start items-center | space-x-4 w-full",
+                )}>
+                    <p className="text-md font-bold mr-4">Download Report Date</p>
+                    <select className="select select-md select-info dark:bg-white w-48 | shadow-lg shadow-blue-100">
+                        <option selected value={30}>30 Days</option>
+                        <option value={1}>1 Day</option>
+                        <option value={7}>7 Days</option>
+                    </select>
+                    <button className="btn btn-success btn-md | shadow-lg shadow-blue-100" onClick={() => {}}>
+                        <span className="text-md">Download</span>
+                    </button>
+                </div>
+                <div className="flex justify-between sm:justify-end items-center | w-full sm:w-2/4">
+
+                </div>
+            </div>
+        );
+    }
+
+}
+BookingReport.contextType = Context;
+
 class BookingsContent extends Component {
 
     render() {
@@ -207,7 +235,6 @@ class BookingsContent extends Component {
                 <div className="flex flex-col | border-b-2 border-jt-primary | mx-4 pb-4">
                     <div>
                         <h2 className="text-6xl mb-4 sm:mb-0 sm:text-3xl">Bookings</h2>
-                        {/* Loading animation */}
                     </div>
                     <div>
                         <p className="text-xl sm:text-sm  text-gray-400">
