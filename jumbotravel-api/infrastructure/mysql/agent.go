@@ -294,3 +294,24 @@ func (db *MySQL) FetchAgentBookingCompositeCount(agentId int, agentType string, 
 
 	return
 }
+
+func (db *MySQL) FetchAgentFlightsCount(agentId int, agentType string, flightId, airplaneId, days int) (s []dto.BookingCount, err error) {
+
+	qb := &agentbuilders.FlightsCountQueryBuilder{}
+	qb.SetAgentId(agentId)
+	qb.SetAgentType(agentType)
+	qb.SetFlightId(flightId)
+	qb.SetAirplaneId(airplaneId)
+	qb.SetDays(days)
+
+	ent, err := db.Fetch(&dto.BookingCount{}, qb)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, e := range ent {
+		s = append(s, e.(dto.BookingCount))
+	}
+
+	return
+}

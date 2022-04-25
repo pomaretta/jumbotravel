@@ -70,3 +70,7 @@ func (app *Application) GetAgentBookingCount(agentId int, agentType, countType s
 func (app *Application) GetAgentBookingCompositeCount(agentId int, agentType string, flightId, airplaneId, days int) ([]dto.BookingCompositeCount, error) {
 	return app.MySQLFetcher.FetchAgentBookingCompositeCount(agentId, agentType, flightId, airplaneId, days)
 }
+
+func (app *Application) GetAgentFlightCount(agentId int, agentType string, flightId, airplaneId, days int) ([]dto.BookingCount, error) {
+	return app.MySQLFetcher.FetchAgentFlightsCount(agentId, agentType, flightId, airplaneId, days)
+}

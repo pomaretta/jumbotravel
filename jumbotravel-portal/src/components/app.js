@@ -792,7 +792,8 @@ class AppWrapper extends Component {
         this.api.getAgentBookingStats({
             token: this.state.token,
             type: "CREATION",
-            days: days
+            days: days,
+            target: this.state.agent && this.state.agent.type == "PROVIDER" ? "BOOKING" : "FLIGHT"
         }).then(response => {
             this.setState({
                 agentDashboardPrimaryChart: response
@@ -810,7 +811,8 @@ class AppWrapper extends Component {
         this.api.getAgentBookingStats({
             token: this.state.token,
             type: "STATUS",
-            days: days
+            days: days,
+            target: "BOOKING"
         }).then(response => {
             this.setState({
                 agentDashboardSecondaryChart: response

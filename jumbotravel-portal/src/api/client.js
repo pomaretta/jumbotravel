@@ -455,7 +455,7 @@ class RestClient {
     // BOOKING
     // ================
 
-    async getAgentBookingStats({ token, days, type }) {
+    async getAgentBookingStats({ token, days, type, target }) {
 
         const response = await fetch(
             requestWithParameters({
@@ -467,7 +467,8 @@ class RestClient {
                 }),
                 params: {
                     "days": days,
-                    "type": type
+                    "type": type,
+                    "target": target
                 }
             }), {
             method: 'GET',

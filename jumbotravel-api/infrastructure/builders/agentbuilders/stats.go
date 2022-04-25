@@ -169,6 +169,98 @@ func (qb *BookingCountQueryBuilder) BuildQuery() (string, []interface{}, error) 
 	return query, args, nil
 }
 
+type FlightsCountQueryBuilder struct {
+	builders.MySQLQueryBuilder
+
+	agentId    int
+	agentType  string
+	flightId   int
+	airplaneId int
+	days       int
+}
+
+func (qb *FlightsCountQueryBuilder) SetAgentId(agentId int) {
+	qb.agentId = agentId
+}
+
+func (qb *FlightsCountQueryBuilder) SetAgentType(agentType string) {
+	qb.agentType = agentType
+}
+
+func (qb *FlightsCountQueryBuilder) SetFlightId(flightId int) {
+	qb.flightId = flightId
+}
+
+func (qb *FlightsCountQueryBuilder) SetAirplaneId(airplaneId int) {
+	qb.airplaneId = airplaneId
+}
+
+func (qb *FlightsCountQueryBuilder) SetDays(days int) {
+	qb.days = days
+}
+
+func (qb *FlightsCountQueryBuilder) buildWhereClauses() (string, []interface{}, error) {
+
+	partialQuery := "WHERE 1=1"
+	args := []interface{}{}
+
+	if qb.agentId == 0 {
+		return "", args, fmt.Errorf("agent id is required")
+	}
+	agentColumn := "fa.agentmapping_id = 1"
+	if qb.agentType == "PROVIDER" {
+		agentColumn = "ma3.agentmapping_id"
+	}
+	partialQuery = fmt.Sprintf("%s AND %s = ?", partialQuery, agentColumn)
+	args = append(args, qb.agentId)
+
+	if qb.flightId != 0 {
+		partialQuery = fmt.Sprintf("%s AND f.flight_id = ?", partialQuery)
+		args = append(args, qb.flightId)
+	}
+
+	if qb.airplaneId != 0 {
+		partialQuery = fmt.Sprintf("%s AND fr.airplane_id = ?", partialQuery)
+		args = append(args, qb.airplaneId)
+	}
+
+	if qb.days > 0 {
+		partialQuery = fmt.Sprintf("%s AND DATE(f.created_at) BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL ? DAY) AND CURRENT_DATE", partialQuery)
+		args = append(args, qb.days)
+	}
+
+	return partialQuery, args, nil
+}
+
+func (qb *FlightsCountQueryBuilder) BuildQuery() (string, []interface{}, error) {
+
+	whereClauses, args, err := qb.buildWhereClauses()
+	if err != nil {
+		return "", nil, err
+	}
+
+	query := fmt.Sprintf(`
+	SELECT
+		DATE(f.created_at) as name,
+		COUNT(DISTINCT f.flight_id) as value
+	FROM flights f 
+	INNER JOIN flight_agents fa
+		ON fa.flight_id = f.flight_id
+	INNER JOIN flight_routes fr 
+		ON fr.route_id = f.route_id
+	LEFT JOIN master_airports ma 
+		ON ma.airport = fr.arrival_airport
+	LEFT JOIN master_agents ma2 
+		ON ma2.airport_id = ma.airport_id
+	LEFT JOIN master_agentmapping ma3 
+		ON ma3.agent_id = ma2.agent_id
+	%s
+	GROUP BY 1
+	`, whereClauses)
+
+	return query, args, nil
+}
+
 type BookingCompositeQueryBuilder struct {
 	builders.MySQLQueryBuilder
 

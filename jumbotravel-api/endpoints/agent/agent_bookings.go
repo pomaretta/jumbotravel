@@ -899,7 +899,20 @@ func BookingCount(application *application.Application) func(*gin.Context) {
 			return
 		}
 
-		result, err := application.GetAgentBookingCount(parsedAgentId, agentType, countType, 0, 0, parsedDays)
+		countTarget := c.DefaultQuery("target", "BOOKING")
+		if countTarget != "BOOKING" && countTarget != "FLIGHT" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "target must be booking or flight",
+			})
+			return
+		}
+
+		var result []dto.BookingCount
+		if countTarget == "BOOKING" {
+			result, err = application.GetAgentBookingCount(parsedAgentId, agentType, countType, 0, 0, parsedDays)
+		} else {
+			result, err = application.GetAgentFlightCount(parsedAgentId, agentType, 0, 0, parsedDays)
+		}
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
