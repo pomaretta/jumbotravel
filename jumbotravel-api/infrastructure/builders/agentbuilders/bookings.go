@@ -2,6 +2,7 @@ package agentbuilders
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/dto"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/infrastructure/builders"
@@ -15,6 +16,7 @@ type BookingsAggrQueryBuilder struct {
 	bookingReferenceId string
 	flightId           int
 	airplaneId         int
+	from, to           time.Time
 }
 
 func (qb *BookingsAggrQueryBuilder) SetAgentId(agentId int) {
@@ -35,6 +37,14 @@ func (qb *BookingsAggrQueryBuilder) SetAgentType(agentType string) {
 
 func (qb *BookingsAggrQueryBuilder) SetAirplaneId(airplaneId int) {
 	qb.airplaneId = airplaneId
+}
+
+func (qb *BookingsAggrQueryBuilder) SetFrom(from time.Time) {
+	qb.from = from
+}
+
+func (qb *BookingsAggrQueryBuilder) SetTo(to time.Time) {
+	qb.to = to
 }
 
 func (qb *BookingsAggrQueryBuilder) buildWhereClauses() (string, []interface{}, error) {
@@ -67,6 +77,16 @@ func (qb *BookingsAggrQueryBuilder) buildWhereClauses() (string, []interface{}, 
 	}
 
 	partialQuery = fmt.Sprintf("%s AND bl.lt = bd.created_at", partialQuery)
+
+	if !qb.from.IsZero() {
+		partialQuery = fmt.Sprintf("%s AND DATE(bd.created_at) >= DATE(?)", partialQuery)
+		args = append(args, qb.from.Format("2006-01-02"))
+	}
+
+	if !qb.to.IsZero() {
+		partialQuery = fmt.Sprintf("%s AND DATE(bd.created_at) <= DATE(?)", partialQuery)
+		args = append(args, qb.to.Format("2006-01-02"))
+	}
 
 	return partialQuery, args, nil
 }

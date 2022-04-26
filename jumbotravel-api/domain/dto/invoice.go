@@ -54,10 +54,11 @@ func (v *Invoice) Val() interface{} {
 }
 
 type InvoiceInput struct {
-	AgentId           *int `json:"agent_id"`
-	AgentMappingId    *int `json:"agentmapping_id"`
-	ProviderId        *int `json:"provider_id"`
-	ProviderMappingId *int `json:"providermapping_id"`
+	AgentId           *int       `json:"agent_id"`
+	AgentMappingId    *int       `json:"agentmapping_id"`
+	ProviderId        *int       `json:"provider_id"`
+	ProviderMappingId *int       `json:"providermapping_id"`
+	ReportDate        *time.Time `json:"report_date"`
 }
 
 func (i InvoiceInput) Build() (string, []interface{}, error) {
@@ -86,8 +87,19 @@ func (i InvoiceInput) Build() (string, []interface{}, error) {
 	if i.ProviderMappingId == nil {
 		return "", nil, fmt.Errorf("providermappingid is required")
 	}
-	partialQuery = fmt.Sprintf("%s,?)", partialQuery)
+	partialQuery = fmt.Sprintf("%s,?", partialQuery)
 	args = append(args, *i.ProviderMappingId)
+
+	if i.ReportDate != nil {
+		parsedDate := *i.ReportDate
+		partialQuery = fmt.Sprintf("%s,DATE(?)", partialQuery)
+		args = append(args, parsedDate.Format("2006-01-02"))
+	} else {
+		partialQuery = fmt.Sprintf("%s,?", partialQuery)
+		args = append(args, nil)
+	}
+
+	partialQuery = fmt.Sprintf("%s)", partialQuery)
 
 	return partialQuery, args, nil
 }

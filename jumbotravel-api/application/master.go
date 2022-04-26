@@ -31,8 +31,8 @@ func (app *Application) PutNotifications(notifications []dto.NotificationInput) 
 	return app.MySQLFetcher.PutNotification(notifications)
 }
 
-func (app *Application) GetInvoices(invoiceId, agentId, providerId int, bookingReferenceId string) ([]dto.Invoice, error) {
-	return app.MySQLFetcher.FetchInvoices(invoiceId, agentId, providerId, bookingReferenceId)
+func (app *Application) GetInvoices(invoiceId, agentId, providerId int, bookingReferenceId string, from, to time.Time) ([]dto.Invoice, error) {
+	return app.MySQLFetcher.FetchInvoices(invoiceId, agentId, providerId, bookingReferenceId, from, to)
 }
 
 func (app *Application) RegisterInvoice(invoice dto.InvoiceInput) (int64, error) {

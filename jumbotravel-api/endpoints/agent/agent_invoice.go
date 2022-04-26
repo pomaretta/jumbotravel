@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -83,7 +84,7 @@ func ObtainPDF(application *application.Application) func(*gin.Context) {
 			return
 		}
 
-		invoices, err := application.GetInvoices(parsedInvoiceId, parsedSignatureAgentId, parsedSignatureProviderId, bookingReferenceId)
+		invoices, err := application.GetInvoices(parsedInvoiceId, parsedSignatureAgentId, parsedSignatureProviderId, bookingReferenceId, time.Time{}, time.Time{})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
@@ -156,7 +157,7 @@ func PutInvoice(app *application.Application) func(*gin.Context) {
 			schema = "http"
 		}
 
-		invoices, err := app.GetInvoices(0, parsedAgentId, 0, bookingReferenceId)
+		invoices, err := app.GetInvoices(0, parsedAgentId, 0, bookingReferenceId, time.Time{}, time.Time{})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
@@ -244,7 +245,7 @@ func PutInvoice(app *application.Application) func(*gin.Context) {
 			return
 		}
 
-		invoices, err = app.GetInvoices(0, parsedAgentId, 0, bookingReferenceId)
+		invoices, err = app.GetInvoices(0, parsedAgentId, 0, bookingReferenceId, time.Time{}, time.Time{})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
@@ -276,6 +277,162 @@ func PutInvoice(app *application.Application) func(*gin.Context) {
 		}
 		parsedInvoice.Signature = signature
 		parsedInvoice.SignatureUrl = fmt.Sprintf("%s://%s/agent/%d/bookings/%s/invoice?signature=%s", schema, c.Request.Host, parsedAgentId, bookingReferenceId, signature)
+
+		creator := invoice.New(parsedInvoice)
+		res, err := creator.Create()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		c.Header("Content-Type", "application/pdf")
+		res.Buffer.WriteTo(c.Writer)
+	}
+}
+
+func InvoiceReport(app *application.Application) func(*gin.Context) {
+	return func(c *gin.Context) {
+
+		agentId := c.Param("id")
+		parsedAgentId, err := strconv.Atoi(agentId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		agentType := c.GetString("subtype")
+		// Day of report
+		day := c.Query("day")
+		parsedDay, err := time.Parse("2006-01-02", day)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "invalid day",
+			})
+			return
+		}
+
+		if agentType != "PROVIDER" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "invalid agent type",
+			})
+			return
+		}
+
+		// TODO: Check if invoice is already generated
+		invoices, err := app.GetInvoices(0, parsedAgentId, 0, "", parsedDay, parsedDay)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		if len(invoices) > 0 {
+			parsedInvoice, err := invoice.Parse(invoices)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": err.Error(),
+				})
+				return
+			}
+			signature, err := signInvoice(parsedInvoice)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": err.Error(),
+				})
+				return
+			}
+			parsedInvoice.Signature = signature
+			creator := invoice.New(parsedInvoice)
+			res, err := creator.Create()
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": err.Error(),
+				})
+				return
+			}
+			c.Header("Content-Type", "application/pdf")
+			res.Buffer.WriteTo(c.Writer)
+			return
+		}
+
+		// Obtain all bookings by day
+		bookings, err := app.GetAgentBookingsAggregateWithDays(parsedAgentId, agentType, 0, 0, parsedDay, parsedDay)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		if len(bookings) == 0 {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "bookings not found",
+			})
+			return
+		}
+
+		invoiceInput := dto.InvoiceInput{
+			AgentId:           &parsedAgentId,
+			AgentMappingId:    &parsedAgentId,
+			ProviderId:        &parsedAgentId,
+			ProviderMappingId: &parsedAgentId,
+			ReportDate:        &parsedDay,
+		}
+		invoiceId, err := app.RegisterInvoice(invoiceInput)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		var invoiceBookings []dto.InvoiceBookingInput
+		for _, booking := range bookings {
+			invoiceBookings = append(invoiceBookings, dto.InvoiceBookingInput{
+				InvoiceId:          utils.Int(int(invoiceId)),
+				BookingReferenceId: booking.BookingReferenceId,
+			})
+		}
+		_, err = app.RegisterInvoiceBookings(invoiceBookings)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		invoices, err = app.GetInvoices(int(invoiceId), parsedAgentId, 0, "", parsedDay, parsedDay)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		if len(invoices) == 0 {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "invoice not found",
+			})
+			return
+		}
+
+		parsedInvoice, err := invoice.Parse(invoices)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		// Sign the invoice
+		signature, err := signInvoice(parsedInvoice)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		parsedInvoice.Signature = signature
 
 		creator := invoice.New(parsedInvoice)
 		res, err := creator.Create()

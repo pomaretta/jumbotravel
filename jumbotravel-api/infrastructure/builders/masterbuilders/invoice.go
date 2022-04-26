@@ -2,6 +2,7 @@ package masterbuilders
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/domain/dto"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/infrastructure/builders"
@@ -14,6 +15,7 @@ type InvoiceQueryBuilder struct {
 	bookingReferenceId string
 	agentId            int
 	providerId         int
+	from, to           time.Time
 }
 
 func (qb *InvoiceQueryBuilder) SetInvoiceId(invoiceId int) {
@@ -30,6 +32,14 @@ func (qb *InvoiceQueryBuilder) SetAgentId(agentId int) {
 
 func (qb *InvoiceQueryBuilder) SetProviderId(providerId int) {
 	qb.providerId = providerId
+}
+
+func (qb *InvoiceQueryBuilder) SetFrom(from time.Time) {
+	qb.from = from
+}
+
+func (qb *InvoiceQueryBuilder) SetTo(to time.Time) {
+	qb.to = to
 }
 
 func (qb *InvoiceQueryBuilder) buildWhereClauses() (string, []interface{}, error) {
@@ -55,6 +65,16 @@ func (qb *InvoiceQueryBuilder) buildWhereClauses() (string, []interface{}, error
 	if qb.providerId > 0 {
 		partialQuery = fmt.Sprintf("%s AND ma5.agentmapping_id = ?", partialQuery)
 		args = append(args, qb.providerId)
+	}
+
+	if !qb.from.IsZero() {
+		partialQuery = fmt.Sprintf("%s AND DATE(i.report_date) >= DATE(?)", partialQuery)
+		args = append(args, qb.from.Format("2006-01-02"))
+	}
+
+	if !qb.to.IsZero() {
+		partialQuery = fmt.Sprintf("%s AND DATE(i.report_date) <= DATE(?)", partialQuery)
+		args = append(args, qb.to.Format("2006-01-02"))
 	}
 
 	return partialQuery, args, nil
@@ -126,7 +146,8 @@ func (qb *PutInvoiceQueryBuilder) BuildQuery() (string, []interface{}, error) {
 			agent_id,
 			agentmapping_id,
 			provider_id,
-			providermapping_id
+			providermapping_id,
+			report_date
 		) VALUES
 		%s;
 	`, values)

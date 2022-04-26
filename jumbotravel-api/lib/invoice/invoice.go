@@ -37,10 +37,12 @@ func (c *Creator) createHeader() (err error) {
 			})
 			c.maroto.ColSpace(5)
 			c.maroto.Col(4, func() {
-				c.maroto.QrCode(c.Invoice.SignatureUrl, props.Rect{
-					Center:  true,
-					Percent: 100,
-				})
+				if c.Invoice.SignatureUrl != "" {
+					c.maroto.QrCode(c.Invoice.SignatureUrl, props.Rect{
+						Center:  true,
+						Percent: 100,
+					})
+				}
 			})
 		})
 	})

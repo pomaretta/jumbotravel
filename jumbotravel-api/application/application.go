@@ -52,6 +52,7 @@ type MySQLFetcher interface {
 	FetchAgentFlightAgents(agentId, flightId int) ([]dto.FlightAgent, error)
 	FetchAgentFlightProducts(agentId, flightId int) ([]dto.FlightProduct, error)
 	FetchAgentBookingsAggregate(agentId int, agentType string, flightId, airplaneId int) ([]dto.BookingAggregate, error)
+	FetchAgentBookingsAggregateWithDays(agentId int, agentType string, flightId, airplaneId int, from, to time.Time) ([]dto.BookingAggregate, error)
 
 	// Agent Bookings
 	FetchAgentBookingDetails(agentId int, agentType, bookingReferenceId string) (*dto.BookingAggregate, error)
@@ -69,7 +70,7 @@ type MySQLFetcher interface {
 	UpdateStock(stock []dto.StockInput) (int64, error)
 
 	// Invoice
-	FetchInvoices(invoiceId, agentId, providerId int, bookingReferenceId string) ([]dto.Invoice, error)
+	FetchInvoices(invoiceId, agentId, providerId int, bookingReferenceId string, from, to time.Time) ([]dto.Invoice, error)
 	PutInvoice(invoice dto.InvoiceInput) (int64, error)
 	PutInvoiceBookings(invoiceBookings []dto.InvoiceBookingInput) (int64, error)
 }

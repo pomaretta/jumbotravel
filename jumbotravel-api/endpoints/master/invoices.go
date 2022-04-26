@@ -2,6 +2,7 @@ package master
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pomaretta/jumbotravel/jumbotravel-api/application"
@@ -56,7 +57,7 @@ func Invoices(application *application.Application) func(*gin.Context) {
 
 		bookingReferenceId := c.Query("bookingreferenceid")
 
-		invoices, err := application.GetInvoices(parsedInvoiceId, parsedAgentId, parsedProviderId, bookingReferenceId)
+		invoices, err := application.GetInvoices(parsedInvoiceId, parsedAgentId, parsedProviderId, bookingReferenceId, time.Time{}, time.Time{})
 		if err != nil {
 			c.JSON(400, gin.H{
 				"error": err.Error(),

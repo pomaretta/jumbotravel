@@ -10,6 +10,7 @@ func (api *API) initAgent() {
 	{
 		agentGroup.GET("/data", agent.Data(api.application))
 		agentGroup.GET("/validate", agent.Validate(api.application))
+		agentGroup.GET("/report", agent.InvoiceReport(api.application))
 
 		// Notifications
 		notificationsGroup := agentGroup.Group("/notifications")

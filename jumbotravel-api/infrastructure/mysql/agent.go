@@ -136,6 +136,28 @@ func (db *MySQL) FetchAgentBookingsAggregate(agentId int, agentType string, flig
 	return
 }
 
+func (db *MySQL) FetchAgentBookingsAggregateWithDays(agentId int, agentType string, flightId, airplaneId int, from, to time.Time) (s []dto.BookingAggregate, err error) {
+
+	qb := &agentbuilders.BookingsAggrQueryBuilder{}
+	qb.SetAgentId(agentId)
+	qb.SetFlightId(flightId)
+	qb.SetAgentType(agentType)
+	qb.SetAirplaneId(airplaneId)
+	qb.SetFrom(from)
+	qb.SetTo(to)
+
+	ent, err := db.Fetch(&dto.BookingAggregate{}, qb)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, e := range ent {
+		s = append(s, e.(dto.BookingAggregate))
+	}
+
+	return
+}
+
 func (db *MySQL) FetchAgentBookingDetails(agentId int, agentType, bookingReferenceId string) (*dto.BookingAggregate, error) {
 
 	qb := &agentbuilders.BookingsAggrQueryBuilder{}
@@ -213,13 +235,15 @@ func (db *MySQL) PutBooking(bookings []dto.BookingInput) (int64, error) {
 	return db.Update(qb)
 }
 
-func (db *MySQL) FetchInvoices(invoiceId, agentId, providerId int, bookingReferenceId string) (s []dto.Invoice, err error) {
+func (db *MySQL) FetchInvoices(invoiceId, agentId, providerId int, bookingReferenceId string, from, to time.Time) (s []dto.Invoice, err error) {
 
 	qb := &masterbuilders.InvoiceQueryBuilder{}
 	qb.SetInvoiceId(invoiceId)
 	qb.SetAgentId(agentId)
 	qb.SetProviderId(providerId)
 	qb.SetBookingReferenceId(bookingReferenceId)
+	qb.SetFrom(from)
+	qb.SetTo(to)
 
 	ent, err := db.Fetch(&dto.Invoice{}, qb)
 	if err != nil {

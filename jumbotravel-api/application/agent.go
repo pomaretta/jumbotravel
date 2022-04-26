@@ -35,6 +35,10 @@ func (app *Application) GetAgentBookingsAggregate(agentId int, agentType string,
 	return app.MySQLFetcher.FetchAgentBookingsAggregate(agentId, agentType, flightId, airplaneId)
 }
 
+func (app *Application) GetAgentBookingsAggregateWithDays(agentId int, agentType string, flightId, airplaneId int, from, to time.Time) ([]dto.BookingAggregate, error) {
+	return app.MySQLFetcher.FetchAgentBookingsAggregateWithDays(agentId, agentType, flightId, airplaneId, from, to)
+}
+
 func (app *Application) GetAgentBookingDetails(agentId int, agenType, bookingReferenceId string) (*dto.BookingAggregate, error) {
 	return app.MySQLFetcher.FetchAgentBookingDetails(agentId, agenType, bookingReferenceId)
 }
