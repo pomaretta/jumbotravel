@@ -851,6 +851,13 @@ class AppWrapper extends Component {
         })
     }
 
+    async getReport(reportDate) {
+        return this.api.getReport({
+            token: this.state.token,
+            reportDate: reportDate
+        })
+    }
+
     render() {
         if (this.hasToLogIn()) {
             return <LoginModule app={this} config={this.props.config} />
@@ -943,6 +950,7 @@ class AppWrapper extends Component {
             putBookingRequest: this.putBookingRequest.bind(this),
             putInvoice: this.putInvoice.bind(this),
             fillBooking: this.fillBooking.bind(this),
+            getReport: this.getReport.bind(this),
 
             // =====================
             // Functionalities (Dashboard)

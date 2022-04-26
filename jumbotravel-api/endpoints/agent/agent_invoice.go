@@ -321,6 +321,13 @@ func InvoiceReport(app *application.Application) func(*gin.Context) {
 			return
 		}
 
+		if parsedDay.Equal(time.Now().UTC().Truncate(24 * time.Hour)) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "invoice cannot be generated for today",
+			})
+			return
+		}
+
 		// TODO: Check if invoice is already generated
 		invoices, err := app.GetInvoices(0, parsedAgentId, 0, "", parsedDay, parsedDay)
 		if err != nil {

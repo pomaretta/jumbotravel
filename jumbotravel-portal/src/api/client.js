@@ -767,6 +767,38 @@ class RestClient {
         return response.blob();
     }
 
+    async getReport({ token, reportDate }) {
+
+        const response = await fetch(
+            requestWithParameters({
+                url: getAgentPath({
+                    schema: this.schema,
+                    hostname: this.hostname,
+                    token: token,
+                    path: `/report`
+                }),
+                params: {
+                    "day": reportDate,
+                }
+            }), {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token.getToken()}`
+            }
+        });
+
+        if (response.status !== 200) {
+            let error = await response.json();
+            throw new APIError(
+                error && error["error"] ? error["error"] : response.statusText,
+                response.status,
+                response.statusText
+            )
+        }
+
+        return response.blob();
+    }
+
     async fillBooking({ token, bookingReferenceId }) {
 
         const response = await fetch(

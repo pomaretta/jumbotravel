@@ -83,6 +83,7 @@ const AppContext = React.createContext({
     putBookingRequest: () => {},
     putInvoice: () => {},
     fillBooking: () => {},
+    getReport: () => {},
 
     // =====================
     // Functionality (Dashboard)

@@ -44,7 +44,7 @@ class ProviderDashboard extends Component {
                             <h4 className="text-2xl font-bold">Bookings count</h4>
                             <p className="text-xs text-gray-500">Booking count summarized by day</p>
                         </div>
-                        {/* Flights Chart */}
+                        {/* Bookings Chart */}
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart width={150} height={40}
                                 // Change with days of super component
