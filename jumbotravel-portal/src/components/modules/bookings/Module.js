@@ -336,7 +336,7 @@ class BookingsContent extends Component {
 
         return (
             <div className="w-full | py-4">
-                <div className="flex | justify-between items-center | border-b-2 border-jt-primary | mx-4 pb-4">
+                <div className="flex flex-col sm:flex-row | space-y-4 sm:space-y-0 | justify-between items-start sm:items-center | border-b-2 border-jt-primary | mx-4 pb-4">
                     <div className="flex flex-col">
                         <div>
                             <h2 className="text-6xl mb-4 sm:mb-0 sm:text-3xl">Bookings</h2>
@@ -350,18 +350,18 @@ class BookingsContent extends Component {
                     {
                         this.context.agent && this.context.agent.type === "PROVIDER" ?
                             (
-                                <div className="space-x-4 | flex | justify-end items-center">
-                                    <p className="font-bold text-brand-blue">
+                                <div className="space-y-2 sm:space-y-0 sm:space-x-4 | flex flex-col sm:flex-row | justify-start items-start sm:justify-end sm:items-center | w-full">
+                                    <p className="font-bold text-brand-blue text-2xl sm:text-sm">
                                         Download Daily Report
                                     </p>
                                     {/* Date field */}
-                                    <input type="date" className="input input-md input-info dark:bg-white w-48 | shadow-lg shadow-blue-100"
+                                    <input type="date" className="w-full | input input-md input-info dark:bg-white sm:w-48 | shadow-lg shadow-blue-100"
                                         onChange={(e) => { this.changeSelectedDate(e.target.value) }}
                                         defaultValue={this.state.selectedDate}
                                     />
                                     <button
                                         type="button"
-                                        className="btn btn-success btn-md | text-white | shadow-lg shadow-blue-100"
+                                        className="btn btn-success btn-md sm:w-auto w-full | text-white | shadow-lg shadow-blue-100"
                                         onClick={() => { this.downloadDaily() }}
                                     >
                                         Download
