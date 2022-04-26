@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS invoices (
 	provider_id					INT NOT NULL,
 	providermapping_id			INT NOT NULL,
 
+	report_date 				DATE NULL,
+
     updated_at					TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	created_at					TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
