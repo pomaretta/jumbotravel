@@ -16,9 +16,9 @@ func SwaggerMiddleware(application *application.Application, spec *swag.Spec, co
 	spec.Version = application.Version
 	switch application.Environment {
 	case "PROD":
-		spec.Host = "pws.prod.carlospomares.com"
+		spec.Host = "api.jumbotravel.carlospomares.es"
 	case "DEV":
-		spec.Host = "pws.dev.carlospomares.com"
+		spec.Host = "api.jumbotravel.carlospomares.es"
 	}
 
 	if !utils.IsWorker() {
