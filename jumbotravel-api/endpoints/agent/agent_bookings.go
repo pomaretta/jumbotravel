@@ -344,6 +344,24 @@ func BookingCreation(application *application.Application) func(*gin.Context) {
 		}
 		agent := agents[0]
 
+		// TODO: Get airport details
+		airports, err := application.GetMasterAirports(
+			0, *flight.ArrivalCountry, *flight.ArrivalCity, *flight.ArrivalAirport,
+		)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		if len(airports) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "arrival airport not found",
+			})
+			return
+		}
+		airport := airports[0]
+
 		// ====================
 		// Request
 		// ====================
@@ -395,7 +413,6 @@ func BookingCreation(application *application.Application) func(*gin.Context) {
 			NotificationType: utils.String("INFO"),
 			ExpiresAt:        utils.Time(time.Now().Add(time.Hour * 24)),
 		}
-
 		flightNotification := dto.NotificationInput{
 			Scope:            utils.String("FLIGHT"),
 			ResourceId:       flight.FlightID,
@@ -409,7 +426,6 @@ func BookingCreation(application *application.Application) func(*gin.Context) {
 				"booking": referenceId,
 			},
 		}
-
 		agentNotification := dto.NotificationInput{
 			Scope:            utils.String("AGENT"),
 			ResourceId:       agent.AgentID,
@@ -418,12 +434,23 @@ func BookingCreation(application *application.Application) func(*gin.Context) {
 			Link:             utils.String(fmt.Sprintf("/bookings/%s", referenceId)),
 			ExpiresAt:        utils.Time(time.Now().Add(time.Hour * 1)),
 		}
+		airportNotification := dto.NotificationInput{
+			Scope:            utils.String("AIRPORT"),
+			ResourceId:       airport.AirportID,
+			ResourceUuid:     &referenceId,
+			Title:            utils.String(fmt.Sprintf("Booking for flight %d", *flight.FlightID)),
+			Message:          utils.String(fmt.Sprintf("Booking for flight %d", *flight.FlightID)),
+			Link:             utils.String(fmt.Sprintf("/bookings/%s", referenceId)),
+			NotificationType: utils.String("INFO"),
+			ExpiresAt:        utils.Time(time.Now().Add(time.Hour * 2)),
+		}
 
 		// TODO: Provider notification
 		notifications := []dto.NotificationInput{
 			bookingNotification,
 			flightNotification,
 			agentNotification,
+			airportNotification,
 		}
 
 		_, err = application.PutNotifications(notifications)
