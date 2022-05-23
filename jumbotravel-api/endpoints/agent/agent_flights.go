@@ -511,7 +511,7 @@ func UpdateFlightStatus(application *application.Application) func(*gin.Context)
 		var notifications []dto.NotificationInput
 
 		// If next status is DEPARTURE, send notification to airport.
-		if nextStatus == "DEPARTURE" {
+		if nextStatus == "ARRIVAL" {
 			// Obtain airport data
 			airports, err := application.GetMasterAirports(
 				0, *flight.ArrivalCountry, *flight.ArrivalCity, *flight.ArrivalAirport,
@@ -533,11 +533,11 @@ func UpdateFlightStatus(application *application.Application) func(*gin.Context)
 				Scope:      utils.String("AIRPORT"),
 				ResourceId: airport.AirportID,
 				Title: utils.String(fmt.Sprintf(
-					"Flight %d is about to depart",
+					"Flight %d is about to arrive",
 					*flight.FlightID,
 				)),
 				Message: utils.String(fmt.Sprintf(
-					"Flight %d is about to depart",
+					"Flight %d is about to arrive",
 					*flight.FlightID,
 				)),
 				NotificationType: utils.String("INFO"),
