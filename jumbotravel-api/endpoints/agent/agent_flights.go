@@ -420,8 +420,16 @@ func UpdateFlightStatus(application *application.Application) func(*gin.Context)
 			})
 			return
 		}
-		if len(airplaneFlights) > 0 {
-			fmt.Printf("%+v\n", airplaneFlights)
+
+		hasFlights := false
+		for _, airplaneFlight := range airplaneFlights {
+			// has flight if there's a flight and it
+			if *airplaneFlight.Status != "BUSY" && airplaneFlight.DepartureTime.After(*flight.ArrivalTime) {
+				hasFlights = true
+				break
+			}
+		}
+		if hasFlights {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "airplane is already in use",
 			})
