@@ -444,7 +444,6 @@ func UpdateFlightStatus(application *application.Application) func(*gin.Context)
 			return
 		}
 
-		// If the next status is DEPARTURE, simulate stock decrease
 		if nextStatus == "FLYING" {
 
 			// Obtain the flight products
@@ -509,7 +508,44 @@ func UpdateFlightStatus(application *application.Application) func(*gin.Context)
 			}
 		}
 
-		notification := dto.NotificationInput{
+		var notifications []dto.NotificationInput
+
+		// If next status is DEPARTURE, send notification to airport.
+		if nextStatus == "DEPARTURE" {
+			// Obtain airport data
+			airports, err := application.GetMasterAirports(
+				0, *flight.ArrivalCountry, *flight.ArrivalCity, *flight.ArrivalAirport,
+			)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": err.Error(),
+				})
+				return
+			}
+			if len(airports) == 0 {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"error": "arrival airport not found",
+				})
+				return
+			}
+			airport := airports[0]
+			notifications = append(notifications, dto.NotificationInput{
+				Scope:      utils.String("AIRPORT"),
+				ResourceId: airport.AirportID,
+				Title: utils.String(fmt.Sprintf(
+					"Flight %d is about to depart",
+					*flight.FlightID,
+				)),
+				Message: utils.String(fmt.Sprintf(
+					"Flight %d is about to depart",
+					*flight.FlightID,
+				)),
+				NotificationType: utils.String("INFO"),
+				ExpiresAt:        utils.Time(time.Now().UTC().Add(time.Hour * 2)),
+			})
+		}
+
+		notifications = append(notifications, dto.NotificationInput{
 			Scope:            utils.String("FLIGHT"),
 			ResourceId:       utils.Int(parsedFlightId),
 			Title:            utils.String(fmt.Sprintf("Flight status changed to %s", nextStatus)),
@@ -520,8 +556,9 @@ func UpdateFlightStatus(application *application.Application) func(*gin.Context)
 				"agent":   fmt.Sprintf("%s %s", *agent.Name, *agent.Surname),
 				"agentid": agentId,
 			},
-		}
-		_, err = application.PutNotifications([]dto.NotificationInput{notification})
+		})
+
+		_, err = application.PutNotifications(notifications)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
